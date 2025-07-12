@@ -1,0 +1,52 @@
+/* CSS Variables and Base Styles */
+:root {
+  --color-primary: #A5B4FC;
+  --color-primary-dark: #6366F1;
+  --color-secondary: #60A5FA;
+  --color-accent: #FDE68A;
+  --color-success: #6EE7B7;
+  --color-error: #FCA5A5;
+  --color-bg: #F8FAFC;
+  --color-card: #FFFFFF;
+  --color-text: #1E293B;
+  --color-text-secondary: #64748B;
+  --color-border: #E5E7EB;
+  --color-white: #FFFFFF;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--color-primary);
+  color: var(--color-text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-image: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 1.8rem;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  color: var(--color-text-secondary);
+  margin-bottom: 30px;
+}

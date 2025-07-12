@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Aplicativo de Flashcards</title>
+</head>
+
+<body>
+    <header class="dashboard-header">
+        <div class="container header-container">
+            <h1>Flashcards</h1>
+            <div class="user-menu">
+                <span class="username">Olá, <span id="user-name">Usuário</span></span>
+                <button id="logout-btn" class="btn-logout">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="dashboard-welcome">
+            <h2>Meus Baralhos</h2>
+            <p class="dashboard-subtitle">Gerencie seus baralhos de flashcards e comece a estudar</p>
+        </section>
+
+        <section class="decks-container">
+            <div class="deck-grid" id="decks-grid">
+                <!-- Os baralhos serão inseridos aqui dinamicamente -->
+                <!-- Template para cada baralho -->
+                <div class="deck-item create-deck">
+                    <div class="create-deck-content">
+                        <span class="plus-icon">+</span>
+                        <span>Criar novo baralho</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="create-deck-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Criar Novo Baralho</h2>
+            <form id="create-deck-form">
+                <div class="form-group">
+                    <label for="deck-title">Título</label>
+                    <input type="text" id="deck-title" required placeholder="Ex: JavaScript Básico">
+                </div>
+                <div class="form-group">
+                    <label for="deck-description">Descrição</label>
+                    <textarea id="deck-description" rows="3" placeholder="Descreva o conteúdo deste baralho"></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Criar Baralho</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/notifications.js" type="module"></script>
+    <script src="js/auth.js" type="module"></script>
+</body>
+
+</html>

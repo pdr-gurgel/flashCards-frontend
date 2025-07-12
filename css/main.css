@@ -1,0 +1,16 @@
+/* Main CSS file - imports all modules */
+
+/* Import variables and base styles */
+@import 'variables.css';
+
+/* Import layout styles */
+@import 'layout.css';
+
+/* Import forms styles */
+@import 'forms.css';
+
+/* Import background styles */
+@import 'background.css';
+
+/* Import notification styles */
+@import 'notifications.css';
