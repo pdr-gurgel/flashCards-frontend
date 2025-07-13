@@ -37,14 +37,20 @@
 
 .form {
   display: none;
+  position: relative;
+  z-index: 1;
 }
 
 .form.active {
   display: block;
+  position: relative;
+  z-index: 20; /* Aumentado para ficar acima de outros elementos */
 }
 
 .input-group {
   margin-bottom: 20px;
+  position: relative;
+  z-index: 25; /* Aumentado para garantir clicabilidade */
 }
 
 label {
@@ -64,6 +70,10 @@ input[type="password"] {
   font-size: 0.95rem;
   color: var(--color-text);
   transition: all 0.3s;
+  position: relative;
+  z-index: 30; /* Aumentado para garantir clicabilidade */
+  pointer-events: auto; /* Força que eventos de clique sejam sempre recebidos */
+  touch-action: manipulation; /* Melhora a resposta em dispositivos touch */
 }
 
 input:focus {
@@ -95,6 +105,14 @@ input:focus {
   cursor: pointer;
   transition: background-color 0.3s;
   box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 50; /* Valor alto para garantir que está acima de tudo */
+  pointer-events: auto !important; /* Força que eventos de clique sejam sempre recebidos */
+  touch-action: manipulation !important; /* Melhora a resposta em dispositivos touch */
+  user-select: none; /* Evita seleção de texto indesejada */
+  appearance: none; /* Propriedade padrão para compatibilidade */
+  -webkit-appearance: none; /* Remove estilização padrão em dispositivos iOS */
+  -moz-appearance: none; /* Compatibilidade com Firefox */
 }
 
 .btn-primary:hover {
@@ -141,5 +159,43 @@ input:focus {
 @media (max-width: 480px) {
   .social-buttons {
     flex-direction: column;
+  }
+  
+  /* Ajustes para garantir clicabilidade em dispositivos menores */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    z-index: 60;
+    margin-bottom: 10px;
+    padding: 15px; /* Input maior para facilitar o toque */
+    font-size: 16px; /* Tamanho de fonte que evita zoom em iOS */
+  }
+  
+  .btn-primary {
+    z-index: 70;
+    margin-top: 15px;
+    padding: 15px 20px; /* Botão maior para facilitar o toque */
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+  
+  /* Garantindo espaço adequado entre os campos */
+  .input-group {
+    margin-bottom: 20px;
+  }
+  
+  .input-group:last-of-type {
+    margin-bottom: 30px;
+    padding-bottom: 10px; /* Espaço adicional no último campo */
+  }
+  
+  /* Corrigindo problema específico no formulário de registro */
+  #register-form .input-group:nth-last-child(2) {
+    margin-bottom: 25px;
+  }
+  
+  /* Garantir que o formulário de registro tenha espaço suficiente */
+  #register-form form {
+    padding-bottom: 20px;
   }
 }

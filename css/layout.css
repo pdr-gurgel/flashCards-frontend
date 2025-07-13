@@ -16,6 +16,7 @@
   padding: 40px;
   overflow-y: auto;
   position: relative;
+  z-index: 10; /* Garante que o formulário fique acima dos elementos de fundo */
 }
 
 .illustration {
@@ -70,15 +71,26 @@
   .form-container {
     width: 100%;
     padding: 30px;
+    z-index: 20; /* Aumenta z-index em telas menores */
   }
 }
 
 @media (max-width: 480px) {
   .form-container {
     padding: 20px;
+    z-index: 30; /* Aumenta ainda mais o z-index em telas muito pequenas */
   }
 
   h1 {
     font-size: 1.6rem;
+  }
+  
+  /* Adicionando isso para garantir que o container não seja muito alto */
+  .container {
+    min-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+    max-width: 100%;
+    box-shadow: none;
   }
 }
