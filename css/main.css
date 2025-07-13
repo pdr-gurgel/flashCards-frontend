@@ -14,3 +14,6 @@
 
 /* Import notification styles */
 @import 'notifications.css';
+
+/* Import dashboard styles */
+@import 'dashboard.css';

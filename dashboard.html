@@ -5,54 +5,148 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Aplicativo de Flashcards</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./css/main.css">
 </head>
 
 <body>
-    <header class="dashboard-header">
-        <div class="container header-container">
-            <h1>Flashcards</h1>
-            <div class="user-menu">
-                <span class="username">Olá, <span id="user-name">Usuário</span></span>
-                <button id="logout-btn" class="btn-logout">Sair</button>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h1 class="app-title">Flashcards</h1>
+
+            <div class="user-profile">
+                <div class="user-profile-placeholder">
+                    <span class="user-initial">U</span>
+                </div>
+                <h3 class="user-name user-name-display">Usuário</h3>
+                <p class="user-grade">Estudante</p>
             </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+                    <span class="nav-text">Dashboard</span>
+                </li>
+                <li class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-layer-group"></i></span>
+                    <span class="nav-text">Meus Decks</span>
+                </li>
+                <li class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-clone"></i></span>
+                    <span class="nav-text">Flashcards</span>
+                </li>
+                <li class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-book-open"></i></span>
+                    <span class="nav-text">Modo Estudo</span>
+                </li>
+                <li class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-clock"></i></span>
+                    <span class="nav-text">Pomodoro</span>
+                </li>
+
+            </ul>
+
+
         </div>
-    </header>
 
-    <main class="container">
-        <section class="dashboard-welcome">
-            <h2>Meus Baralhos</h2>
-            <p class="dashboard-subtitle">Gerencie seus baralhos de flashcards e comece a estudar</p>
-        </section>
-
-        <section class="decks-container">
-            <div class="deck-grid" id="decks-grid">
-                <!-- Os baralhos serão inseridos aqui dinamicamente -->
-                <!-- Template para cada baralho -->
-                <div class="deck-item create-deck">
-                    <div class="create-deck-content">
-                        <span class="plus-icon">+</span>
-                        <span>Criar novo baralho</span>
+        <!-- Main content -->
+        <div class="main-content">
+            <div class="dashboard-header">
+                <h1 class="page-title">Dashboard</h1>
+                <div class="header-right">
+                    <div class="date-display">Sábado, 12 de julho de 2025</div>
+                    <div class="header-actions">
+                        <button id="theme-toggle" class="btn-icon" aria-label="Alternar tema">
+                            <i class="fas fa-moon theme-icon-dark"></i>
+                            <i class="fas fa-sun theme-icon-light"></i>
+                        </button>
+                        <button id="logout-btn" class="btn-primary">Sair</button>
                     </div>
                 </div>
             </div>
-        </section>
-    </main>
 
-    <div id="create-deck-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2>Criar Novo Baralho</h2>
-            <form id="create-deck-form">
-                <div class="form-group">
-                    <label for="deck-title">Título</label>
-                    <input type="text" id="deck-title" required placeholder="Ex: JavaScript Básico">
+            <!-- Cards section -->
+            <div class="cards-grid">
+                <div class="card card-decks" data-type="decks">
+                    <div class="card-icon"><i class="fas fa-layer-group"></i></div>
+                    <h3>Meus Decks</h3>
+                    <p>Gerencie e organize seus baralhos de estudo</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">3</div>
+                            <div class="stat-label">Novos</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="deck-description">Descrição</label>
-                    <textarea id="deck-description" rows="3" placeholder="Descreva o conteúdo deste baralho"></textarea>
+
+                <div class="card card-flashcards" data-type="flashcards">
+                    <div class="card-icon"><i class="fas fa-clone"></i></div>
+                    <h3>Flashcards</h3>
+                    <p>Crie e edite seus cartões de estudo</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">124</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">15</div>
+                            <div class="stat-label">Para revisar</div>
+                        </div>
+                    </div>
                 </div>
-                <button type="submit" class="btn-primary">Criar Baralho</button>
-            </form>
+
+                <div class="card card-study" data-type="study">
+                    <div class="card-icon"><i class="fas fa-book-open"></i></div>
+                    <h3>Modo Estudo</h3>
+                    <p>Inicie uma sessão de estudo com flashcards</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">45</div>
+                            <div class="stat-label">min. hoje</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">86%</div>
+                            <div class="stat-label">Acertos</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-pomodoro" data-type="pomodoro">
+                    <div class="card-icon"><i class="fas fa-clock"></i></div>
+                    <h3>Pomodoro</h3>
+                    <p>Utilize a técnica pomodoro para estudos focados</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">25</div>
+                            <div class="stat-label">min. foco</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">5</div>
+                            <div class="stat-label">min. pausa</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar section -->
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <h3 class="calendar-title">Calendário de Estudos</h3>
+                    <div class="calendar-navigation">
+                        <button class="calendar-btn"><i class="fas fa-chevron-left"></i></button>
+                        <button class="calendar-btn"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="calendar-days">
+                    <!-- Calendar days will be inserted here by JS -->
+                </div>
+            </div>
         </div>
     </div>
 
@@ -61,6 +155,7 @@
     <!-- Scripts -->
     <script src="js/notifications.js" type="module"></script>
     <script src="js/auth.js" type="module"></script>
+    <script src="js/dashboard.js" type="module"></script>
 </body>
 
 </html>
