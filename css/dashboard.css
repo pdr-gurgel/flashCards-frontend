@@ -238,12 +238,16 @@ body {
   display: flex;
   align-items: center;
   gap: 15px;
+  position: relative;
+  z-index: 10; /* Garante que os elementos do header estejam acima de outros elementos */
 }
 
 .header-actions {
   display: flex;
   align-items: center;
   gap: 12px;
+  position: relative;
+  z-index: 11; /* Valor superior ao container para garantir clicabilidade */
 }
 
 /* Botão de toggle de tema */
@@ -260,6 +264,8 @@ body {
   color: var(--text-primary);
   background-color: rgba(255, 255, 255, 0.15);
   transition: background-color 0.3s, transform 0.2s;
+  position: relative;
+  z-index: 12; /* Garante que o botão está acima de outros elementos */
 }
 
 [data-theme="dark"] .btn-icon {
@@ -308,6 +314,8 @@ body {
   font-size: 0.9rem;
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s;
+  position: relative;
+  z-index: 12; /* Garante que o botão está acima de outros elementos */
 }
 
 .btn-primary:hover {
@@ -688,12 +696,23 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+    width: 100%;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    /* Garantir que não haja overflow ou sobreposição de elementos */
+    width: auto;
+    min-height: 40px;
   }
 
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
+    padding: 15px;
   }
 
   .calendar-days {
@@ -705,6 +724,14 @@ body {
     padding: 8px;
     height: auto;
     font-size: 0.8rem;
+  }
+
+  /* Garantir que os botões sejam clicáveis */
+  .btn-icon, .btn-primary {
+    position: relative;
+    z-index: 15;
+    pointer-events: auto;
+    touch-action: auto;
   }
 }
 
