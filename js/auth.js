@@ -31,16 +31,23 @@ export function getToken() {
 export function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = 'index.html'; // Redireciona para a página inicial
+    window.location.href = 'index.html#login'; // Redireciona para a página inicial na seção de login
 }
 
 // Proteção de rota - redireciona para login se não autenticado
 export function protectRoute() {
-    if (!isAuthenticated()) {
-        window.location.href = 'index.html';
-        return false;
+    try {
+        if (!isAuthenticated()) {
+            // Redireciona apenas se não estiver autenticado, com tratamento de erro
+            window.location.href = 'index.html#login';
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error('Erro na verificação de autenticação:', error);
+        // Em caso de erro, mantém o usuário na página atual
+        return true;
     }
-    return true;
 }
 
 // Adiciona o token de autenticação ao cabeçalho de requisições fetch

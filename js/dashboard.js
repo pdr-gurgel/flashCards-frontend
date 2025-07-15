@@ -1,9 +1,17 @@
+// Importando funções de autenticação
+import { protectRoute, getCurrentUser, logout } from './auth.js';
+
 // Dashboard functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Verificar se o usuário está autenticado
+    if (!protectRoute()) {
+        return; // Se não estiver autenticado, protectRoute já redireciona
+    }
+    
     // Inicializar o tema
     initTheme();
-    // Get current user info from localStorage
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    // Get current user info using auth module
+    const currentUser = getCurrentUser() || {};
     
     // Set user name and initial if available
     const userNameElements = document.querySelectorAll('.user-name-display');
@@ -77,9 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('currentUser');
-            window.location.href = 'login.html';
+            logout(); // Usando a função centralizada de logout
         });
     }
     
@@ -91,16 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Check if user is authenticated, redirect to login if not
-    checkAuthentication();
+    // Autenticação já verificada no início da função
 });
-
-function checkAuthentication() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'index.html';
-    }
-}
 
 // Funções de gerenciamento de tema
 function initTheme() {
@@ -137,24 +135,65 @@ function toggleTheme() {
     localStorage.setItem('theme', newTheme);
 }
 
+// Variáveis globais para controlar o mês e ano atual do calendário
+let currentViewMonth;
+let currentViewYear;
+
 function setupCalendar() {
     const calendarDays = document.querySelector('.calendar-days');
     if (!calendarDays) return;
     
+    // Inicializar com o mês atual
     const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
+    currentViewMonth = today.getMonth();
+    currentViewYear = today.getFullYear();
     
-    // Update calendar title
+    // Renderizar o calendário com o mês/ano atual
+    renderCalendar(calendarDays, currentViewMonth, currentViewYear);
+    
+    // Add event listeners to navigation buttons
+    const prevBtn = document.querySelector('.calendar-btn:first-child');
+    const nextBtn = document.querySelector('.calendar-btn:last-child');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            // Implementando navegação para o mês anterior
+            currentViewMonth--;
+            if (currentViewMonth < 0) {
+                currentViewMonth = 11;
+                currentViewYear--;
+            }
+            renderCalendar(calendarDays, currentViewMonth, currentViewYear);
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            // Implementando navegação para o próximo mês
+            currentViewMonth++;
+            if (currentViewMonth > 11) {
+                currentViewMonth = 0;
+                currentViewYear++;
+            }
+            renderCalendar(calendarDays, currentViewMonth, currentViewYear);
+        });
+    }
+}
+
+
+// Função separada para renderizar o calendário
+function renderCalendar(calendarDays, month, year) {
+    // Atualizar título do calendário
     const calendarTitle = document.querySelector('.calendar-title');
     if (calendarTitle) {
-        const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(today);
-        calendarTitle.textContent = `Calendário de Estudos - ${monthName} ${currentYear}`;
+        const date = new Date(year, month);
+        const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(date);
+        calendarTitle.textContent = `Calendário de Estudos - ${monthName} ${year}`;
     }
     
     // Get first day of month and days in month
-    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
     
     // Clear calendar
     calendarDays.innerHTML = '';
@@ -176,8 +215,14 @@ function setupCalendar() {
         calendarDays.appendChild(emptyDay);
     }
     
-    // Define events (for demonstration - you can replace with actual data)
-    const events = [8, 12, 15, 21, 28]; // Days with events
+    // Define events (para demonstração - isso pode ser substituído por dados reais)
+    const events = [8, 12, 15, 21, 28]; // Dias com eventos
+    
+    // Obter data atual para destacar o dia de hoje
+    const today = new Date();
+    const currentDay = today.getDate();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
     
     // Add days of month
     for (let i = 1; i <= daysInMonth; i++) {
@@ -185,8 +230,8 @@ function setupCalendar() {
         day.className = 'calendar-day';
         day.textContent = i;
         
-        // Mark today
-        if (i === today.getDate()) {
+        // Mark today (somente se estivermos no mês e ano atual)
+        if (i === currentDay && month === currentMonth && year === currentYear) {
             day.classList.add('today');
         }
         
@@ -205,27 +250,9 @@ function setupCalendar() {
             this.classList.toggle('selected');
             
             // Here you can add functionality for selected dates
-            console.log(`Selected date: ${i}/${currentMonth + 1}/${currentYear}`);
+            console.log(`Selected date: ${i}/${month + 1}/${year}`);
         });
         
         calendarDays.appendChild(day);
-    }
-    
-    // Add event listeners to navigation buttons
-    const prevBtn = document.querySelector('.calendar-btn:first-child');
-    const nextBtn = document.querySelector('.calendar-btn:last-child');
-    
-    if (prevBtn) {
-        prevBtn.addEventListener('click', function() {
-            // Here you would implement previous month view
-            console.log('Previous month');
-        });
-    }
-    
-    if (nextBtn) {
-        nextBtn.addEventListener('click', function() {
-            // Here you would implement next month view
-            console.log('Next month');
-        });
     }
 }
