@@ -8,7 +8,7 @@ import axios from 'axios';
 console.log('showNotification importada:', typeof showNotification);
 
 // URL base da API (ajuste conforme necessário)
-const API_BASE_URL = 'https://flashcards-backend-ejyn.onrender.com/';
+const API_BASE_URL = 'http://localhost:3001';
 
 // Configuração base do axios
 const api = axios.create({
@@ -24,18 +24,42 @@ export function initForms() {
     const registerFormContainer = document.getElementById('register-form');
     const loginTab = document.getElementById('login-tab');
     const registerTab = document.getElementById('register-tab');
+    
+    // Verificar se os elementos existem
+    if (!loginFormContainer || !registerFormContainer) {
+        console.error('Erro: Containers de formulários não encontrados');
+        return;
+    }
+    
+    if (!loginTab || !registerTab) {
+        console.error('Erro: Tabs de formulários não encontrados');
+    }
 
     // Formulários (elementos form)
     const loginForm = loginFormContainer.querySelector('form');
     const registerForm = registerFormContainer.querySelector('form');
+    
+    // Verificar se os formulários existem
+    if (!loginForm || !registerForm) {
+        console.error('Erro: Elementos de formulários não encontrados');
+        return;
+    }
 
     // Manipulador para o formulário de login
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
+        const emailInput = document.getElementById('login-email');
+        const passwordInput = document.getElementById('login-password');
         const loginButton = loginForm.querySelector('button[type="submit"]');
+        
+        if (!emailInput || !passwordInput || !loginButton) {
+            showNotification('Erro: Campos de formulário não encontrados', 'error');
+            return;
+        }
+        
+        const email = emailInput.value;
+        const password = passwordInput.value;
 
         if (!email || !password) {
             showNotification('Email e senha são obrigatórios.', 'error');
@@ -50,7 +74,7 @@ export function initForms() {
             const response = await api.post('/login', { email, password });
             const data = response.data;
 
-            // Armazena o token JWT e informações do usuário
+            // Armazena o token JWT e informações do usuário (usando chaves consistentes)
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
 
@@ -75,11 +99,22 @@ export function initForms() {
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const username = document.getElementById('register-name').value;
-        const email = document.getElementById('register-email').value;
-        const password = document.getElementById('register-password').value;
-        const confirmPassword = document.getElementById('register-confirm-password').value;
+        const usernameInput = document.getElementById('register-name');
+        const emailInput = document.getElementById('register-email');
+        const passwordInput = document.getElementById('register-password');
+        const confirmPasswordInput = document.getElementById('register-confirm-password');
         const registerButton = registerForm.querySelector('button[type="submit"]');
+        
+        // Verificar se todos os campos existem
+        if (!usernameInput || !emailInput || !passwordInput || !confirmPasswordInput || !registerButton) {
+            showNotification('Erro: Campos de formulário não encontrados', 'error');
+            return;
+        }
+        
+        const username = usernameInput.value;
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
 
         // Validações
         if (!username || !email || !password || !confirmPassword) {
@@ -127,6 +162,12 @@ export function initForms() {
 
     // Função para trocar entre os tabs (duplicada de tabs.js para evitar dependência circular)
     function switchTab(activeTab, activeForm, inactiveTab, inactiveForm) {
+        // Verificar se todos os elementos existem antes de manipular classes
+        if (!activeTab || !activeForm || !inactiveTab || !inactiveForm) {
+            console.error('Erro: Elementos não encontrados para alternância de tabs');
+            return;
+        }
+        
         activeTab.classList.add('active');
         activeForm.classList.add('active');
         inactiveTab.classList.remove('active');
