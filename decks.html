@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Decks - Aplicativo de Flashcards</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./css/main.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h1 class="app-title">Flashcards</h1>
+
+            <div class="user-profile">
+                <div class="user-profile-placeholder">
+                    <span class="user-initial">U</span>
+                </div>
+                <h3 class="user-name user-name-display">Usuário</h3>
+                <p class="user-grade">Estudante</p>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item" data-page="dashboard">
+                    <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+                    <span class="nav-text">Dashboard</span>
+                </li>
+                <li class="nav-item active" data-page="decks">
+                    <span class="nav-icon"><i class="fas fa-layer-group"></i></span>
+                    <span class="nav-text">Meus Decks</span>
+                </li>
+                <li class="nav-item" data-page="flashcards">
+                    <span class="nav-icon"><i class="fas fa-clone"></i></span>
+                    <span class="nav-text">Flashcards</span>
+                </li>
+                <li class="nav-item" data-page="study">
+                    <span class="nav-icon"><i class="fas fa-book-open"></i></span>
+                    <span class="nav-text">Modo Estudo</span>
+                </li>
+                <li class="nav-item" data-page="pomodoro">
+                    <span class="nav-icon"><i class="fas fa-clock"></i></span>
+                    <span class="nav-text">Pomodoro</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main content -->
+        <div class="main-content">
+            <div class="dashboard-header">
+                <h1 class="page-title">Meus Decks</h1>
+                <div class="header-right">
+                    <div class="date-display">Sábado, 12 de julho de 2025</div>
+                    <div class="header-actions">
+                        <button id="theme-toggle" class="btn-icon" aria-label="Alternar tema">
+                            <i class="fas fa-moon theme-icon-dark"></i>
+                            <i class="fas fa-sun theme-icon-light"></i>
+                        </button>
+                        <button id="logout-btn" class="btn-primary">Sair</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decks content -->
+            <div class="decks-container">
+                <div class="decks-header">
+                    <h2>Gerencie seus decks de estudo</h2>
+                    <div class="decks-actions">
+                        <div class="decks-filter">
+                            <input type="text" id="deck-filter" placeholder="Buscar decks..."
+                                aria-label="Filtrar decks">
+                            <select id="deck-sort" aria-label="Ordenar decks">
+                                <option value="name-asc">A-Z</option>
+                                <option value="name-desc">Z-A</option>
+                                <option value="cards">Mais cartões</option>
+                                <option value="progress">Progresso</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" id="create-deck-btn">
+                            <i class="fas fa-plus"></i>
+                            Novo Deck
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Grid of decks -->
+                <div class="decks-grid">
+                    <!-- Decks serão inseridos aqui via JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para criar/editar deck -->
+    <div class="modal" id="deck-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="deck-modal-title">Criar Novo Deck</h3>
+                <button class="modal-close-btn" aria-label="Fechar modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="deck-form">
+                    <div class="form-group">
+                        <label for="deck-title">Título</label>
+                        <input type="text" id="deck-title" required placeholder="Digite o título do deck">
+                    </div>
+                    <div class="form-group">
+                        <label for="deck-color">Cor</label>
+                        <div class="color-options">
+                            <input type="color" id="deck-color" value="#4f6bed">
+                            <div class="color-presets">
+                                <span class="color-preset" style="background-color: #4f6bed"
+                                    data-color="#4f6bed"></span>
+                                <span class="color-preset" style="background-color: #4caf50"
+                                    data-color="#4caf50"></span>
+                                <span class="color-preset" style="background-color: #ff9800"
+                                    data-color="#ff9800"></span>
+                                <span class="color-preset" style="background-color: #e91e63"
+                                    data-color="#e91e63"></span>
+                                <span class="color-preset" style="background-color: #009688"
+                                    data-color="#009688"></span>
+                                <span class="color-preset" style="background-color: #673ab7"
+                                    data-color="#673ab7"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="deck-icon">Ícone</label>
+                        <div class="icon-options">
+                            <select id="deck-icon">
+                                <option value="fa-square-root-variable">Matemática</option>
+                                <option value="fa-language">Idiomas</option>
+                                <option value="fa-hashtag">Números</option>
+                                <option value="fa-book-bible">Religião</option>
+                                <option value="fa-flask">Ciência</option>
+                                <option value="fa-globe">Geografia</option>
+                                <option value="fa-music">Música</option>
+                                <option value="fa-futbol">Esportes</option>
+                                <option value="fa-laptop-code">Tecnologia</option>
+                                <option value="fa-heartbeat">Saúde</option>
+                                <option value="fa-paw">Animais</option>
+                                <option value="fa-brain">Psicologia</option>
+                                <option value="fa-paint-brush">Arte</option>
+                                <option value="fa-language">Idiomas</option>
+                                <option value="fa-code">Programação</option>
+                                <option value="fa-landmark">História</option>
+                                <option value="fa-dna">Biologia</option>
+                                <option value="fa-bullhorn">Marketing</option>
+                                <option value="fa-chart-line">Economia</option>
+                            </select>
+                            <div class="icon-preview">
+                                <i id="icon-preview" class="fas fa-square-root-variable"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="deck-cancel-btn">Cancelar</button>
+                        <button type="submit" class="btn-primary" id="deck-save-btn">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/notifications.js" type="module"></script>
+    <script src="js/auth.js" type="module"></script>
+    <script src="js/decks.js" type="module"></script>
+</body>
+
+</html>

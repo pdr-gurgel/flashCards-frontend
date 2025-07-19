@@ -17,3 +17,6 @@
 
 /* Import dashboard styles */
 @import 'dashboard.css';
+
+/* Import decks styles */
+@import 'decks.css';
