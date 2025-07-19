@@ -1,3 +1,7 @@
+// Importar estilos CSS
+import '../css/main.css';
+import '../css/decks.css';
+
 // Decks management script - unificado (decks.js + decks-main.js)
 import { protectRoute, getCurrentUser, logout } from './auth.js';
 import { showNotification } from './notifications.js';

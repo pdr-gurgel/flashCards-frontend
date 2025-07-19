@@ -8,7 +8,7 @@ import axios from 'axios';
 console.log('showNotification importada:', typeof showNotification);
 
 // URL base da API (ajuste conforme necessário)
-const API_BASE_URL = 'https://flashcards-backend-ejyn.onrender.com';
+const API_BASE_URL = 'http://localhost:3001';
 
 // Configuração base do axios
 const api = axios.create({

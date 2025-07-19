@@ -1,3 +1,7 @@
+// Importar estilos CSS
+import '../css/main.css';
+import '../css/dashboard.css';
+
 // Importando funções de autenticação
 import { protectRoute, getCurrentUser, logout } from './auth.js';
 
