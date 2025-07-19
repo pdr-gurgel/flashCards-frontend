@@ -24,13 +24,13 @@ export function initForms() {
     const registerFormContainer = document.getElementById('register-form');
     const loginTab = document.getElementById('login-tab');
     const registerTab = document.getElementById('register-tab');
-    
+
     // Verificar se os elementos existem
     if (!loginFormContainer || !registerFormContainer) {
         console.error('Erro: Containers de formulários não encontrados');
         return;
     }
-    
+
     if (!loginTab || !registerTab) {
         console.error('Erro: Tabs de formulários não encontrados');
     }
@@ -38,7 +38,7 @@ export function initForms() {
     // Formulários (elementos form)
     const loginForm = loginFormContainer.querySelector('form');
     const registerForm = registerFormContainer.querySelector('form');
-    
+
     // Verificar se os formulários existem
     if (!loginForm || !registerForm) {
         console.error('Erro: Elementos de formulários não encontrados');
@@ -52,12 +52,12 @@ export function initForms() {
         const emailInput = document.getElementById('login-email');
         const passwordInput = document.getElementById('login-password');
         const loginButton = loginForm.querySelector('button[type="submit"]');
-        
+
         if (!emailInput || !passwordInput || !loginButton) {
             showNotification('Erro: Campos de formulário não encontrados', 'error');
             return;
         }
-        
+
         const email = emailInput.value;
         const password = passwordInput.value;
 
@@ -87,7 +87,35 @@ export function initForms() {
 
         } catch (error) {
             console.error('Erro no login:', error);
-            const errorMsg = error.response?.data?.error || error.message || 'Credenciais inválidas. Tente novamente.';
+
+            // Tratamento mais específico dos erros
+            let errorMsg = 'Ocorreu um erro no servidor. Tente novamente mais tarde.';
+
+            // Verificar o status da resposta para mensagens mais específicas
+            if (error.response) {
+                const status = error.response.status;
+
+                if (status === 401) {
+                    errorMsg = 'Email ou senha incorretos. Verifique suas credenciais.';
+                } else if (status === 404) {
+                    errorMsg = 'Email não encontrado. Verifique o email ou crie uma conta.';
+                } else if (status === 400) {
+                    errorMsg = error.response.data?.error || 'Dados de formulário inválidos. Verifique os campos.';
+                } else if (status >= 500) {
+                    errorMsg = 'Servidor indisponível. Tente novamente mais tarde.';
+                }
+
+                // Se o backend enviou uma mensagem de erro específica, use-a
+                if (error.response.data?.error) {
+                    errorMsg = error.response.data.error;
+                }
+            } else if (error.request) {
+                // A requisição foi feita mas não houve resposta
+                errorMsg = 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+            } else {
+                // Algo aconteceu na configuração da requisição
+                errorMsg = error.message || 'Erro ao tentar realizar login.';
+            }
             showNotification(errorMsg, 'error');
         } finally {
             loginButton.disabled = false;
@@ -104,13 +132,13 @@ export function initForms() {
         const passwordInput = document.getElementById('register-password');
         const confirmPasswordInput = document.getElementById('register-confirm-password');
         const registerButton = registerForm.querySelector('button[type="submit"]');
-        
+
         // Verificar se todos os campos existem
         if (!usernameInput || !emailInput || !passwordInput || !confirmPasswordInput || !registerButton) {
             showNotification('Erro: Campos de formulário não encontrados', 'error');
             return;
         }
-        
+
         const username = usernameInput.value;
         const email = emailInput.value;
         const password = passwordInput.value;
@@ -152,7 +180,45 @@ export function initForms() {
 
         } catch (error) {
             console.error('Erro no registro:', error);
-            const errorMsg = error.response?.data?.error || error.message || 'Erro ao criar conta. Tente novamente.';
+
+            // Tratamento mais específico dos erros
+            let errorMsg = 'Ocorreu um erro no servidor. Tente novamente mais tarde.';
+
+            // Verificar o status da resposta para mensagens mais específicas
+            if (error.response) {
+                const status = error.response.status;
+
+                if (status === 409) {
+                    errorMsg = 'Este email já está cadastrado. Tente fazer login ou use outro email.';
+                } else if (status === 400) {
+                    // Verificar mensagens de erro específicas para campos inválidos
+                    if (error.response.data?.error) {
+                        if (error.response.data.error.includes('Username')) {
+                            errorMsg = 'Nome de usuário inválido. Deve ter pelo menos 5 caracteres.';
+                        } else if (error.response.data.error.includes('Email')) {
+                            errorMsg = 'Email inválido. Verifique se o formato está correto.';
+                        } else if (error.response.data.error.includes('senha')) {
+                            errorMsg = 'Senha inválida. Deve ter pelo menos 8 caracteres.';
+                        } else {
+                            errorMsg = error.response.data.error;
+                        }
+                    } else {
+                        errorMsg = 'Dados de formulário inválidos. Verifique os campos.';
+                    }
+                } else if (status >= 500) {
+                    errorMsg = 'Servidor indisponível. Tente novamente mais tarde.';
+                } else {
+                    // Se o backend enviou uma mensagem de erro específica, use-a
+                    errorMsg = error.response.data?.error || 'Erro ao processar o registro.';
+                }
+            } else if (error.request) {
+                // A requisição foi feita mas não houve resposta
+                errorMsg = 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+            } else {
+                // Algo aconteceu na configuração da requisição
+                errorMsg = error.message || 'Erro ao tentar criar conta.';
+            }
+
             showNotification(errorMsg, 'error');
         } finally {
             registerButton.disabled = false;
@@ -167,7 +233,7 @@ export function initForms() {
             console.error('Erro: Elementos não encontrados para alternância de tabs');
             return;
         }
-        
+
         activeTab.classList.add('active');
         activeForm.classList.add('active');
         inactiveTab.classList.remove('active');
