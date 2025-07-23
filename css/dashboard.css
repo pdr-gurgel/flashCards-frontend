@@ -239,7 +239,8 @@ body {
   align-items: center;
   gap: 15px;
   position: relative;
-  z-index: 10; /* Garante que os elementos do header estejam acima de outros elementos */
+  z-index: 10;
+  /* Garante que os elementos do header estejam acima de outros elementos */
 }
 
 .header-actions {
@@ -247,7 +248,8 @@ body {
   align-items: center;
   gap: 12px;
   position: relative;
-  z-index: 11; /* Valor superior ao container para garantir clicabilidade */
+  z-index: 11;
+  /* Valor superior ao container para garantir clicabilidade */
 }
 
 /* Botão de toggle de tema */
@@ -265,7 +267,8 @@ body {
   background-color: rgba(255, 255, 255, 0.15);
   transition: background-color 0.3s, transform 0.2s;
   position: relative;
-  z-index: 12; /* Garante que o botão está acima de outros elementos */
+  z-index: 12;
+  /* Garante que o botão está acima de outros elementos */
 }
 
 [data-theme="dark"] .btn-icon {
@@ -315,7 +318,8 @@ body {
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s;
   position: relative;
-  z-index: 12; /* Garante que o botão está acima de outros elementos */
+  z-index: 12;
+  /* Garante que o botão está acima de outros elementos */
 }
 
 .btn-primary:hover {
@@ -727,7 +731,8 @@ body {
   }
 
   /* Garantir que os botões sejam clicáveis */
-  .btn-icon, .btn-primary {
+  .btn-icon,
+  .btn-primary {
     position: relative;
     z-index: 15;
     pointer-events: auto;

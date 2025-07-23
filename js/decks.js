@@ -1,39 +1,13 @@
-// Importar estilos CSS
-import '../css/main.css';
-import '../css/decks.css';
-
-// Decks management script - unificado (decks.js + decks-main.js)
-import { protectRoute, getCurrentUser, logout } from './auth.js';
-import { showNotification } from './notifications.js';
-
-// Inicialização quando a página carrega
+// Decks.js - Gerenciamento de decks de flashcards
 document.addEventListener('DOMContentLoaded', function () {
-    // Verificar se o usuário está autenticado
-    if (!protectRoute()) {
-        return; // Se não estiver autenticado, protectRoute já redireciona
-    }
-
     // Inicializar o tema
     initTheme();
 
-    // Get current user info using auth module
-    const currentUser = getCurrentUser() || {};
+    // Configurar botões de tema e logout
+    const themeToggle = document.getElementById('theme-toggle');
+    const logoutBtn = document.getElementById('logout-btn');
 
-    // Set user name and initial if available
-    const userNameElements = document.querySelectorAll('.user-name-display');
-    const userInitial = document.querySelector('.user-initial');
-
-    if (currentUser && currentUser.name) {
-        userNameElements.forEach(element => {
-            element.textContent = currentUser.name;
-        });
-
-        if (userInitial) {
-            userInitial.textContent = currentUser.name.charAt(0).toUpperCase();
-        }
-    }
-
-    // Set current date
+    // Exibir data atual
     const dateDisplay = document.querySelector('.date-display');
     if (dateDisplay) {
         const now = new Date();
@@ -44,504 +18,685 @@ document.addEventListener('DOMContentLoaded', function () {
         dateDisplay.innerHTML = `<strong>${weekday}</strong>, ${day} ${month} ${year}`;
     }
 
-    // Handle navigation menu
+    // Event listeners para botões de tema e logout
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+            // Importar a função de logout do módulo de autenticação quando estiver pronto
+            window.location.href = 'login.html';
+        });
+    }
+
+    // Atualizar os deck cards existentes para o novo layout com botões diretos
+    updateExistingDeckCards();
+
+    // Elementos da interface
+    const createDeckCard = document.querySelector('.create-deck');
+    const deckModal = document.getElementById('deck-modal');
+    const confirmModal = document.getElementById('confirm-modal');
+    const modalOverlays = document.querySelectorAll('.modal-overlay');
+    const modalCloseButtons = document.querySelectorAll('.modal-close');
+    const saveButton = document.querySelector('.save-deck');
+    const cancelButton = document.querySelector('.cancel-modal');
+    const confirmDeleteButton = document.querySelector('.confirm-delete');
+    const cancelDeleteButton = document.querySelector('.cancel-delete');
+    // O botão de change-icon foi removido, vamos utilizar direto o selector
+    const iconPicker = document.querySelector('.icon-picker');
+    const iconOptions = document.querySelectorAll('.icon-option');
+    const colorOptions = document.querySelectorAll('.color-option');
+    // Também removemos o iconPreview, precisamos ajustar a lógica
+    const colorPreview = document.querySelector('.color-preview');
+    const deckMenuBtns = document.querySelectorAll('.deck-menu-btn');
+    const deckForm = document.getElementById('deck-form');
+    const deckTitle = document.getElementById('deck-title');
+    const editButtons = document.querySelectorAll('.edit-deck');
+    const deleteButtons = document.querySelectorAll('.delete-deck');
+    const decksGrid = document.querySelector('.decks-grid');
     const navItems = document.querySelectorAll('.nav-item');
+
+    // Gerenciando a navegação entre seções
     navItems.forEach(item => {
         item.addEventListener('click', function () {
-            // Se já estiver na página atual, não faz nada
-            if (this.classList.contains('active')) return;
-
+            const page = this.getAttribute('data-page');
             navItems.forEach(nav => nav.classList.remove('active'));
             this.classList.add('active');
 
-            // Navigate based on data-page attribute
-            const pageType = this.dataset.page;
-            switch (pageType) {
-                case 'dashboard':
+            // Redirecionar para a página correta
+            if (page !== 'decks') {
+                if (page === 'dashboard') {
                     window.location.href = 'dashboard.html';
-                    break;
-                case 'decks':
-                    window.location.href = 'decks.html';
-                    break;
-                case 'flashcards':
-                    // Implementação futura
-                    console.log('Navegando para flashcards');
-                    break;
-                case 'study':
-                    // Implementação futura
-                    console.log('Navegando para modo estudo');
-                    break;
-                case 'pomodoro':
-                    // Implementação futura
-                    console.log('Navegando para pomodoro');
-                    break;
+                } else if (page === 'flashcards') {
+                    window.location.href = 'flashcards.html';
+                } else if (page === 'study') {
+                    window.location.href = 'study.html';
+                } else if (page === 'pomodoro') {
+                    window.location.href = 'pomodoro.html';
+                }
             }
         });
     });
 
-    // Handle logout
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function () {
-            logout(); // Usando a função centralizada de logout
-        });
+    // Estado da aplicação
+    let currentDeckId = null;
+    let decks = [
+        {
+            id: 1,
+            title: "Álgebra Linear",
+            icon: "fa-square-root-alt",
+            color: "#4f64ff",
+            cardsCount: 32,
+            lastReview: "3 dias atrás",
+            progress: 75
+        },
+        {
+            id: 2,
+            title: "Vocabulário Avançado",
+            icon: "fa-language",
+            color: "#35bd6f",
+            cardsCount: 48,
+            lastReview: "Hoje",
+            progress: 45
+        },
+        {
+            id: 3,
+            title: "JavaScript ES6+",
+            icon: "fa-code",
+            color: "#ff9639",
+            cardsCount: 65,
+            lastReview: "5 dias atrás",
+            progress: 90
+        },
+        {
+            id: 4,
+            title: "Revolução Industrial",
+            icon: "fa-landmark",
+            color: "#ff4e6a",
+            cardsCount: 28,
+            lastReview: "1 semana atrás",
+            progress: 60
+        },
+        {
+            id: 5,
+            title: "Biologia Celular",
+            icon: "fa-dna",
+            color: "#11c5c5",
+            cardsCount: 52,
+            lastReview: "2 dias atrás",
+            progress: 25
+        }
+    ];
+
+    // Função para abrir o modal de criação de deck
+    function openCreateDeckModal() {
+        openModal(deckModal);
+        resetForm();
+        currentDeckId = null;
+        document.querySelector('.modal-title').textContent = 'Novo Deck';
     }
 
-    // Theme toggle handler
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', function () {
-            toggleTheme();
-        });
+    // Adicionar event listener ao card de criação
+    createDeckCard.addEventListener('click', openCreateDeckModal);
+
+    // Adicionar event listener ao novo botão da barra secundária
+    const newDeckButton = document.querySelector('.btn-new-deck');
+    if (newDeckButton) {
+        newDeckButton.addEventListener('click', openCreateDeckModal);
     }
 
-    // Inicializar a página de decks
-    initDecksPage();
+    // Não precisa mais abrir/fechar o seletor de ícones, eles estão sempre visíveis
 
-    // Modal functionality
-    setupDeckModal();
-});
+    // Selecionar ícone
+    iconOptions.forEach(option => {
+        option.addEventListener('click', function () {
+            const icon = this.getAttribute('data-icon');
+            iconOptions.forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            // Não temos mais iconPreview, então não precisamos atualizá-lo
+        });
+    });
 
-// Funções de gerenciamento de tema
-function initTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        // Atualiza visual do botão de tema
-        const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            if (savedTheme === 'dark') {
-                themeToggle.classList.add('dark-mode');
-            } else {
-                themeToggle.classList.remove('dark-mode');
+    // Selecionar cor
+    colorOptions.forEach(option => {
+        option.addEventListener('click', function () {
+            const color = this.getAttribute('data-color');
+            colorOptions.forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            colorPreview.style.backgroundColor = color;
+            iconPreview.parentElement.style.backgroundColor = color;
+        });
+    });
+
+    // Navegação entre páginas
+    navItems.forEach(item => {
+        item.addEventListener('click', function () {
+            const page = this.getAttribute('data-page');
+            if (page) {
+                window.location.href = page === 'dashboard' ? 'dashboard.html' : page + '.html';
             }
-        }
-    } else {
-        // Tema default agora é escuro
-        localStorage.setItem('theme', 'dark');
-        document.documentElement.setAttribute('data-theme', 'dark');
-        const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            themeToggle.classList.add('dark-mode');
-        }
-    }
-}
-
-function toggleTheme() {
-    const currentTheme = localStorage.getItem('theme') || 'light';
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-
-    // Atualiza visual do botão
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) {
-        themeToggle.classList.toggle('dark-mode');
-    }
-}
-
-// Modal para criação e edição de decks
-function setupDeckModal() {
-    const modal = document.getElementById('deck-modal');
-    if (!modal) return;
-
-    const openModalBtn = document.getElementById('create-deck-btn');
-    const closeModalBtn = document.querySelector('.modal-close-btn');
-    const cancelBtn = document.getElementById('deck-cancel-btn');
-    const form = document.getElementById('deck-form');
-    const iconSelect = document.getElementById('deck-icon');
-    const iconPreview = document.getElementById('icon-preview');
-    const colorPresets = document.querySelectorAll('.color-preset');
-    const colorInput = document.getElementById('deck-color');
-
-    // Abrir modal ao clicar no botão de criar deck
-    if (openModalBtn) {
-        openModalBtn.addEventListener('click', () => {
-            modal.classList.add('active');
         });
+    });
+
+    // Mostrar menu de opções dos decks
+    deckMenuBtns.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+
+            // Fechar todos os menus abertos
+            document.querySelectorAll('.deck-menu').forEach(menu => {
+                if (menu !== this.nextElementSibling) {
+                    menu.style.display = 'none';
+                }
+            });
+
+            // Alternar visibilidade do menu atual
+            const menu = this.nextElementSibling;
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+
+    // Fechar menus quando clicar fora
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.deck-options')) {
+            document.querySelectorAll('.deck-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }
+    });
+
+    // Função para editar um deck
+    function editDeck(deckId) {
+        // Encontrar o deck no array
+        const deck = decks.find(d => d.id === deckId);
+
+        if (deck) {
+            // Preencher o formulário com os dados do deck
+            document.getElementById('deck-title').value = deck.title;
+
+            // Selecionar o ícone correto
+            iconOptions.forEach(option => {
+                const icon = option.getAttribute('data-icon');
+                if (icon === deck.icon) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+
+            // Selecionar a cor correta
+            colorOptions.forEach(option => {
+                const color = option.getAttribute('data-color');
+                if (color === deck.color) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+
+            // Atualizar o modal
+            document.querySelector('.modal-title').textContent = 'Editar Deck';
+            currentDeckId = deck.id;
+
+            // Abrir o modal
+            openModal(deckModal);
+        }
+    }
+
+    // Adicionar event listeners para os botões de editar
+    editButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const deckCard = this.closest('.deck-card');
+            const deckId = parseInt(deckCard.getAttribute('data-id'));
+            editDeck(deckId);
+        });
+    });
+
+    // Deletar deck
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const deckCard = this.closest('.deck-card');
+            const deckId = parseInt(deckCard.getAttribute('data-id'));
+            currentDeckId = deckId;
+            openModal(confirmModal);
+        });
+    });
+
+    // Fechar modais
+    modalOverlays.forEach(overlay => {
+        overlay.addEventListener('click', function () {
+            const modal = this.parentElement;
+            closeModal(modal);
+        });
+    });
+
+    modalCloseButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const modal = this.closest('.modal');
+            closeModal(modal);
+        });
+    });
+
+    cancelButton.addEventListener('click', function () {
+        closeModal(deckModal);
+    });
+
+    cancelDeleteButton.addEventListener('click', function () {
+        closeModal(confirmModal);
+    });
+
+    // Salvar deck
+    saveButton.addEventListener('click', function () {
+        if (validateForm()) {
+            const title = deckTitle.value;
+            const selectedIcon = document.querySelector('.icon-option.selected').getAttribute('data-icon');
+            const selectedColor = document.querySelector('.color-option.selected').getAttribute('data-color');
+
+            if (currentDeckId) {
+                // Atualizar deck existente
+                updateDeck(currentDeckId, title, selectedIcon, selectedColor);
+                showNotification('Deck atualizado com sucesso!', 'success');
+            } else {
+                // Criar novo deck
+                createDeck(title, selectedIcon, selectedColor);
+                showNotification('Novo deck criado com sucesso!', 'success');
+            }
+
+            closeModal(deckModal);
+        }
+    });
+
+    // Confirmar exclusão
+    confirmDeleteButton.addEventListener('click', function () {
+        if (currentDeckId) {
+            deleteDeck(currentDeckId);
+            showNotification('Deck excluído com sucesso!', 'success');
+            closeModal(confirmModal);
+        }
+    });
+
+    // Validação do formulário
+    function validateForm() {
+        if (deckTitle.value.trim() === '') {
+            showNotification('Por favor, insira um título para o deck.', 'error');
+            return false;
+        }
+        return true;
+    }
+
+    // Resetar formulário
+    function resetForm() {
+        deckTitle.value = '';
+
+        // Resetar ícone e cor
+        const defaultIconOption = document.querySelector('.icon-option[data-icon="fa-square-root-alt"]');
+        const defaultColorOption = document.querySelector('.color-option[data-color="#4f64ff"]');
+
+        if (defaultIconOption) {
+            iconOptions.forEach(opt => opt.classList.remove('selected'));
+            defaultIconOption.classList.add('selected');
+        }
+
+        if (defaultColorOption) {
+            colorOptions.forEach(opt => opt.classList.remove('selected'));
+            defaultColorOption.classList.add('selected');
+        }
+
+        // O seletor de ícones está sempre visível, não precisamos escondê-lo
+    }
+
+    // Abrir modal
+    function openModal(modal) {
+        modal.style.display = 'block';
+        setTimeout(() => {
+            modal.classList.add('active');
+        }, 10);
     }
 
     // Fechar modal
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', () => {
-            modal.classList.remove('active');
-        });
+    function closeModal(modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
     }
 
-    // Fechar modal ao clicar no botão cancelar
-    if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
-            modal.classList.remove('active');
-        });
+    // Criar novo deck
+    function createDeck(title, icon, color) {
+        const newId = decks.length > 0 ? Math.max(...decks.map(d => d.id)) + 1 : 1;
+
+        const newDeck = {
+            id: newId,
+            title,
+            icon,
+            color,
+            cardsCount: 0,
+            lastReview: 'Nunca',
+            progress: 0
+        };
+
+        decks.push(newDeck);
+        renderDeck(newDeck);
     }
 
-    // Fechar modal ao clicar fora do conteúdo
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.classList.remove('active');
-        }
-    });
+    // Atualizar deck existente
+    function updateDeck(id, title, icon, color) {
+        const index = decks.findIndex(d => d.id === id);
 
-    // Atualizar preview do ícone
-    if (iconSelect && iconPreview) {
-        iconSelect.addEventListener('change', () => {
-            iconPreview.className = `fas ${iconSelect.value}`;
-        });
-    }
-
-    // Funcionalidade para as cores predefinidas
-    if (colorPresets) {
-        colorPresets.forEach(preset => {
-            preset.addEventListener('click', () => {
-                const color = preset.dataset.color;
-                colorInput.value = color;
-
-                // Destacar a cor selecionada
-                colorPresets.forEach(p => p.classList.remove('selected'));
-                preset.classList.add('selected');
-            });
-        });
-    }
-
-    // Submit do formulário de deck
-    if (form) {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            // Coletar dados do formulário
-            const deckData = {
-                title: document.getElementById('deck-title').value,
-                color: document.getElementById('deck-color').value,
-                icon: document.getElementById('deck-icon').value
+        if (index !== -1) {
+            // Atualizar no array
+            decks[index] = {
+                ...decks[index],
+                title,
+                icon,
+                color
             };
 
-            // Processar o formulário (aqui seria onde você enviaria para a API)
-            console.log('Dados do deck:', deckData);
+            // Atualizar na UI
+            const deckCard = document.querySelector(`.deck-card[data-id="${id}"]`);
 
-            // Fechar o modal após salvar
-            modal.classList.remove('active');
+            if (deckCard) {
+                // Atualizar título
+                deckCard.querySelector('.deck-title').textContent = title;
 
-            // Recarregar a lista de decks (atualmente com dados mockados)
-            window.location.reload();
-        });
+                // Atualizar ícone
+                const deckIcon = deckCard.querySelector('.deck-icon i');
+                deckIcon.className = `fas ${icon}`;
+                deckCard.querySelector('.deck-icon').style.backgroundColor = color;
+
+                // Atualizar progress fill com a cor
+                deckCard.querySelector('.progress-fill').style.backgroundColor = color;
+            }
+        }
     }
-}
 
-// Mock data for decks
-const mockDecks = [
-    {
-        id: 1,
-        title: 'Matemática Avançada',
-        cardCount: 45,
-        color: '#4f6bed',
-        icon: 'fa-square-root-variable',
-        progress: 68
-    },
-    {
-        id: 2,
-        title: 'Inglês Intermediário',
-        cardCount: 72,
-        color: '#4caf50',
-        icon: 'fa-language',
-        progress: 45
-    },
-    {
-        id: 3,
-        title: 'Programação JavaScript',
-        cardCount: 38,
-        color: '#ff9800',
-        icon: 'fa-code',
-        progress: 82
-    },
-    {
-        id: 4,
-        title: 'História do Brasil',
-        cardCount: 56,
-        color: '#e91e63',
-        icon: 'fa-landmark',
-        progress: 25
-    },
-    {
-        id: 5,
-        title: 'Biologia Celular',
-        cardCount: 64,
-        color: '#009688',
-        icon: 'fa-dna',
-        progress: 52
-    },
-    {
-        id: 6,
-        title: 'Marketing Digital',
-        cardCount: 29,
-        color: '#673ab7',
-        icon: 'fa-bullhorn',
-        progress: 38
+    // Excluir deck
+    function deleteDeck(id) {
+        const index = decks.findIndex(d => d.id === id);
+
+        if (index !== -1) {
+            // Remover do array
+            decks.splice(index, 1);
+
+            // Remover da UI
+            const deckCard = document.querySelector(`.deck-card[data-id="${id}"]`);
+            if (deckCard) {
+                deckCard.style.opacity = 0;
+                setTimeout(() => {
+                    deckCard.remove();
+                }, 300);
+            }
+        }
     }
-];
 
-// Function to initialize the decks page
-export function initDecksPage() {
-    loadDecks();
-    setupEventListeners();
-}
-
-// Function to load decks from API (mocked for now)
-function loadDecks() {
-    renderDecks(mockDecks);
-}
-
-// Function to render decks to the page
-function renderDecks(decks) {
-    const decksContainer = document.querySelector('.decks-grid');
-    if (!decksContainer) return;
-
-    decksContainer.innerHTML = '';
-
-    // Add the "Create New Deck" card first
-    const createDeckCard = document.createElement('div');
-    createDeckCard.className = 'deck-card create-deck';
-    createDeckCard.innerHTML = `
-        <div class="deck-card-inner">
-            <div class="deck-card-icon">
-                <i class="fas fa-plus"></i>
-            </div>
-            <h3 class="deck-card-title">Criar Novo Deck</h3>
-        </div>
-    `;
-    decksContainer.appendChild(createDeckCard);
-
-    // Then add all deck cards
-    decks.forEach(deck => {
-        const deckCard = document.createElement('div');
-        deckCard.className = 'deck-card';
-        deckCard.dataset.deckId = deck.id;
-        deckCard.innerHTML = `
-            <div class="deck-card-inner" style="border-top: 4px solid ${deck.color}">
+    // Renderizar um deck na interface
+    function renderDeck(deck) {
+        const deckTemplate = `
+            <div class="deck-card" data-id="${deck.id}">
                 <div class="deck-card-header">
-                    <div class="deck-card-icon" style="background-color: ${deck.color}">
+                    <div class="deck-icon" style="background-color: ${deck.color};">
                         <i class="fas ${deck.icon}"></i>
                     </div>
                     <div class="deck-actions">
-                        <button class="deck-action-btn edit-deck" aria-label="Editar deck">
-                            <i class="fas fa-pencil"></i>
+                        <button class="deck-action-btn edit-deck" title="Editar deck">
+                            <i class="fas fa-edit"></i>
                         </button>
-                        <button class="deck-action-btn delete-deck" aria-label="Excluir deck">
-                            <i class="fas fa-trash"></i>
+                        <button class="deck-action-btn delete-deck" title="Excluir deck">
+                            <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
                 </div>
-                <h3 class="deck-card-title">${deck.title}</h3>
-                <div class="deck-card-stats">
-                    <div class="deck-stat">
-                        <i class="fas fa-clone"></i>
-                        <span>${deck.cardCount} cartões</span>
+                <div class="deck-card-body">
+                    <h3 class="deck-title">${deck.title}</h3>
+                    <div class="deck-meta">
+                        <span class="deck-cards-count"><i class="fas fa-clone"></i> ${deck.cardsCount} flashcards</span>
+                    </div>
+                    <div class="deck-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${deck.progress}%; background-color: ${deck.color};"></div>
+                        </div>
+                        <div class="progress-text">${deck.progress}% concluído</div>
                     </div>
                 </div>
-                <div class="deck-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${deck.progress}%; background-color: ${deck.color}"></div>
-                    </div>
-                    <div class="progress-text">${deck.progress}% dominado</div>
-                </div>
-                <div class="deck-card-actions">
-                    <button class="btn-secondary study-deck">
+                <div class="deck-card-footer">
+                    <button class="btn-deck-action study-deck">
                         <i class="fas fa-book-open"></i>
-                        Estudar
+                        <span>Estudar</span>
                     </button>
-                    <button class="btn-secondary view-deck">
+                    <button class="btn-deck-action view-deck">
                         <i class="fas fa-eye"></i>
-                        Ver cartões
+                        <span>Visualizar</span>
                     </button>
                 </div>
             </div>
         `;
-        decksContainer.appendChild(deckCard);
-    });
-}
 
-// Helper function to display relative time (e.g. "hoje", "ontem", "há 3 dias")
-function getRelativeTimeString(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+        // Inserir depois do card de criar
+        const createCard = decksGrid.querySelector('.create-deck');
+        createCard.insertAdjacentHTML('afterend', deckTemplate);
 
-    if (diffDays === 0) return 'hoje';
-    if (diffDays === 1) return 'ontem';
-    return `há ${diffDays} dias`;
-}
+        // Adicionar event listeners aos novos botões
+        const newDeckCard = decksGrid.querySelector(`.deck-card[data-id="${deck.id}"]`);
 
-// Setup event listeners for the decks page
-function setupEventListeners() {
-    const decksContainer = document.querySelector('.decks-grid');
-    if (!decksContainer) return;
+        // Botão editar
+        const editBtn = newDeckCard.querySelector('.edit-deck');
+        editBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const deckId = parseInt(newDeckCard.getAttribute('data-id'));
+            const deck = decks.find(d => d.id === deckId);
 
-    // Delegation for deck actions
-    decksContainer.addEventListener('click', (event) => {
-        // Study deck button
-        if (event.target.closest('.study-deck')) {
-            const deckCard = event.target.closest('.deck-card');
-            const deckId = deckCard.dataset.deckId;
-            handleStudyDeck(deckId);
-        }
+            if (deck) {
+                deckTitle.value = deck.title;
+                iconPreview.className = `fas ${deck.icon}`;
+                colorPreview.style.backgroundColor = deck.color;
 
-        // View cards button
-        else if (event.target.closest('.view-deck')) {
-            const deckCard = event.target.closest('.deck-card');
-            const deckId = deckCard.dataset.deckId;
-            handleViewDeck(deckId);
-        }
+                iconOptions.forEach(option => {
+                    const icon = option.getAttribute('data-icon');
+                    option.classList.toggle('selected', icon === deck.icon);
+                });
+                iconPreview.className = `fas ${deck.icon}`;
 
-        // Edit deck button
-        else if (event.target.closest('.edit-deck')) {
-            const deckCard = event.target.closest('.deck-card');
-            const deckId = deckCard.dataset.deckId;
-            handleEditDeck(deckId);
-            event.stopPropagation();
-        }
+                colorOptions.forEach(option => {
+                    const color = option.getAttribute('data-color');
+                    option.classList.toggle('selected', color === deck.color);
+                });
+                colorPreview.style.backgroundColor = deck.color;
 
-        // Delete deck button
-        else if (event.target.closest('.delete-deck')) {
-            const deckCard = event.target.closest('.deck-card');
-            const deckId = deckCard.dataset.deckId;
-            handleDeleteDeck(deckId);
-            event.stopPropagation();
-        }
+                currentDeckId = deckId;
+                openModal(deckModal);
+                iconPreview.parentElement.style.backgroundColor = deck.color;
 
-        // Create new deck card
-        else if (event.target.closest('.create-deck')) {
-            handleCreateDeck();
-        }
-    });
+                document.querySelector('.modal-title').textContent = 'Editar Deck';
+                currentDeckId = deck.id;
 
-    // Filter input for decks
-    const deckFilter = document.querySelector('#deck-filter');
-    if (deckFilter) {
-        deckFilter.addEventListener('input', (event) => {
-            const searchTerm = event.target.value.toLowerCase();
-            filterDecks(searchTerm);
+                openModal(deckModal);
+            }
+        });
+
+        // Botão excluir
+        const deleteBtn = newDeckCard.querySelector('.delete-deck');
+        deleteBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            currentDeckId = parseInt(newDeckCard.getAttribute('data-id'));
+            openModal(confirmModal);
+        });
+
+        // Botão estudar
+        const studyBtn = newDeckCard.querySelector('.study-deck');
+        studyBtn.addEventListener('click', function () {
+            console.log(`Estudar deck: ${deck.id}`);
+            // Adicionar animação ao botão estudar
+            studyBtn.classList.add('btn-animated');
+            setTimeout(() => {
+                studyBtn.classList.remove('btn-animated');
+            }, 500);
+        });
+
+        // Botão visualizar
+        const viewBtn = newDeckCard.querySelector('.view-deck');
+        viewBtn.addEventListener('click', function () {
+            console.log(`Visualizar deck: ${deck.id}`);
+            viewBtn.classList.add('btn-animated');
+            setTimeout(() => {
+                viewBtn.classList.remove('btn-animated');
+            }, 500);
         });
     }
 
-    // Sort dropdown for decks
-    const deckSort = document.querySelector('#deck-sort');
-    if (deckSort) {
-        deckSort.addEventListener('change', (event) => {
-            sortDecks(event.target.value);
+    // Função de inicialização de tema
+    function initTheme() {
+        // Verificar se há um tema salvo no localStorage
+        const savedTheme = localStorage.getItem('theme');
+
+        // Se o usuário já escolheu um tema antes, use-o
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        } else {
+            // Tema default agora é escuro
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    // Função para alternar entre temas claro e escuro
+    function toggleTheme() {
+        // Verificar tema atual
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+
+        // Alternar para o outro tema
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+        // Aplicar o novo tema
+        document.documentElement.setAttribute('data-theme', newTheme);
+
+        // Salvar preferência do usuário
+        localStorage.setItem('theme', newTheme);
+    }
+
+    // Função para atualizar os deck cards existentes no HTML para o novo formato
+    function updateExistingDeckCards() {
+        // Selecionar todos os deck cards (exceto o de criar)
+        const deckCards = document.querySelectorAll('.deck-card:not(.create-deck)');
+
+        deckCards.forEach(card => {
+            // 1. Remover o texto de "Última revisão" de todos os cards
+            const lastReviewElement = card.querySelector('.deck-last-review');
+            if (lastReviewElement) {
+                lastReviewElement.remove();
+            }
+
+            // 2. Substituir o menu de 3 pontinhos por botões diretos
+            const deckHeader = card.querySelector('.deck-card-header');
+            const deckOptions = card.querySelector('.deck-options');
+
+            if (deckOptions) {
+                // Criar o novo container de ações
+                const deckActions = document.createElement('div');
+                deckActions.className = 'deck-actions';
+
+                // Criar botão de editar
+                const editBtn = document.createElement('button');
+                editBtn.className = 'deck-action-btn edit-deck';
+                editBtn.title = 'Editar deck';
+                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+
+                // Criar botão de excluir
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'deck-action-btn delete-deck';
+                deleteBtn.title = 'Excluir deck';
+                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+
+                // Adicionar os botões ao container
+                deckActions.appendChild(editBtn);
+                deckActions.appendChild(deleteBtn);
+
+                // Substituir o menu pelo novo container
+                deckHeader.replaceChild(deckActions, deckOptions);
+
+                // Adicionar event listeners aos novos botões
+                editBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const deckId = parseInt(card.getAttribute('data-id') || card.dataset.id || '0');
+
+                    // Usar a função editDeck que já foi criada
+                    editDeck(deckId);
+                });
+
+                deleteBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    currentDeckId = parseInt(card.getAttribute('data-id') || card.dataset.id || '0');
+                    openModal(confirmModal);
+                });
+            }
+
+            // 2. Adicionar animação ao botão estudar
+            const studyBtn = card.querySelector('.study-deck');
+            if (studyBtn) {
+                // Remover event listeners antigos (se houver)
+                const newStudyBtn = studyBtn.cloneNode(true);
+                studyBtn.parentNode.replaceChild(newStudyBtn, studyBtn);
+
+                // Adicionar novo event listener com animação
+                newStudyBtn.addEventListener('click', function () {
+                    // Aplicar a animação quando clicado
+                    this.classList.add('btn-animated');
+                    setTimeout(() => {
+                        this.classList.remove('btn-animated');
+                    }, 500);
+                });
+            }
         });
     }
-}
 
-// Function to filter decks based on search term
-function filterDecks(searchTerm) {
-    const filteredDecks = mockDecks.filter(deck =>
-        deck.title.toLowerCase().includes(searchTerm)
-    );
-    renderDecks(filteredDecks);
-}
+    // Sistema de notificações
+    function showNotification(message, type = 'info') {
+        const notificationContainer = document.getElementById('notification-container');
 
-// Function to sort decks based on criteria
-function sortDecks(sortCriteria) {
-    let sortedDecks = [...mockDecks];
+        const notificationEl = document.createElement('div');
+        notificationEl.className = `notification ${type}`;
 
-    switch (sortCriteria) {
-        case 'name-asc':
-            sortedDecks.sort((a, b) => a.title.localeCompare(b.title));
-            break;
-        case 'name-desc':
-            sortedDecks.sort((a, b) => b.title.localeCompare(a.title));
-            break;
-        case 'cards':
-            sortedDecks.sort((a, b) => b.cardCount - a.cardCount);
-            break;
-        case 'progress':
-            sortedDecks.sort((a, b) => b.progress - a.progress);
-            break;
-        default:
-            // Default is alphabetical
-            sortedDecks.sort((a, b) => a.title.localeCompare(b.title));
+        const iconClass = type === 'success' ? 'fa-check-circle' :
+            type === 'error' ? 'fa-times-circle' :
+                type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+
+        notificationEl.innerHTML = `
+            <div class="notification-icon">
+                <i class="fas ${iconClass}"></i>
+            </div>
+            <div class="notification-content">
+                <p class="notification-message">${message}</p>
+            </div>
+            <button class="notification-close">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+        notificationContainer.appendChild(notificationEl);
+
+        // Fechar notificação ao clicar no botão
+        const closeBtn = notificationEl.querySelector('.notification-close');
+        closeBtn.addEventListener('click', function () {
+            notificationEl.remove();
+        });
+
+        // Remover notificação após 5 segundos
+        setTimeout(() => {
+            if (notificationContainer.contains(notificationEl)) {
+                notificationEl.style.opacity = '0';
+                setTimeout(() => {
+                    if (notificationContainer.contains(notificationEl)) {
+                        notificationEl.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
     }
 
-    renderDecks(sortedDecks);
-}
-
-// Handler functions for deck actions
-function handleStudyDeck(deckId) {
-    showNotification('Modo estudo iniciado', 'success');
-    console.log(`Studying deck ${deckId}`);
-    // Aqui entraria a lógica para iniciar o modo de estudo
-}
-
-function handleViewDeck(deckId) {
-    showNotification('Visualizando cards do deck', 'info');
-    console.log(`Viewing deck ${deckId}`);
-    // Aqui entraria a lógica para visualizar os cards do deck
-}
-
-function handleEditDeck(deckId) {
-    // Encontrar o deck pelo ID
-    const deck = mockDecks.find(d => d.id == deckId);
-    if (!deck) {
-        showNotification('Deck não encontrado', 'error');
-        return;
-    }
-
-    // Abrir o modal
-    const modal = document.getElementById('deck-modal');
-    if (!modal) return;
-
-    // Alterar o título do modal
-    const modalTitle = document.getElementById('deck-modal-title');
-    if (modalTitle) {
-        modalTitle.textContent = 'Editar Deck';
-    }
-
-    // Preencher os campos com os dados do deck
-    const titleInput = document.getElementById('deck-title');
-    const colorInput = document.getElementById('deck-color');
-    const iconSelect = document.getElementById('deck-icon');
-    const iconPreview = document.getElementById('icon-preview');
-
-    if (titleInput) titleInput.value = deck.title;
-    if (colorInput) colorInput.value = deck.color;
-    if (iconSelect) {
-        iconSelect.value = deck.icon;
-        if (iconPreview) {
-            iconPreview.className = `fas ${deck.icon}`;
-        }
-    }
-
-    // Destacar a cor selecionada nos presets
-    const colorPresets = document.querySelectorAll('.color-preset');
-    colorPresets.forEach(preset => {
-        preset.classList.remove('selected');
-        if (preset.dataset.color === deck.color) {
-            preset.classList.add('selected');
-        }
+    // Inicializar
+    // Atribuir IDs aos decks existentes no DOM
+    const existingDeckCards = document.querySelectorAll('.deck-card:not(.create-deck)');
+    existingDeckCards.forEach((card, index) => {
+        card.setAttribute('data-id', index + 1);
     });
-
-    // Abrir o modal
-    modal.classList.add('active');
-}
-
-function handleDeleteDeck(deckId) {
-    if (confirm('Tem certeza que deseja excluir este deck?')) {
-        showNotification('Deck excluído com sucesso', 'success');
-        console.log(`Deleting deck ${deckId}`);
-        // Aqui entraria a lógica para excluir o deck
-        // Por enquanto, vamos apenas recarregar a lista sem o deck
-        const filteredDecks = mockDecks.filter(deck => deck.id != deckId);
-        renderDecks(filteredDecks);
-    }
-}
-
-function handleCreateDeck() {
-    // showNotification('Criando novo deck', 'info'); // Removido pop-up
-    const modal = document.getElementById('deck-modal');
-    if (modal) {
-        modal.classList.add('active');
-    }
-}
-
-// Exportar as funções que serão usadas em outros arquivos
-export { loadDecks };
+});

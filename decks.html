@@ -7,6 +7,8 @@
     <title>Meus Decks - Aplicativo de Flashcards</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/decks.css">
 </head>
 
 <body>
@@ -45,14 +47,16 @@
                     <span class="nav-text">Pomodoro</span>
                 </li>
             </ul>
+
+            <!-- Sidebar footer removido -->
         </div>
 
-        <!-- Main content -->
+        <!-- Main Content -->
         <div class="main-content">
             <div class="dashboard-header">
                 <h1 class="page-title">Meus Decks</h1>
                 <div class="header-right">
-                    <div class="date-display">Sábado, 12 de julho de 2025</div>
+                    <div class="date-display">Carregando data...</div>
                     <div class="header-actions">
                         <button id="theme-toggle" class="btn-icon" aria-label="Alternar tema">
                             <i class="fas fa-moon theme-icon-dark"></i>
@@ -63,103 +67,417 @@
                 </div>
             </div>
 
-            <!-- Decks content -->
-            <div class="decks-container">
-                <div class="decks-header">
-                    <h2>Gerencie seus decks de estudo</h2>
-                    <div class="decks-actions">
-                        <div class="decks-filter">
-                            <input type="text" id="deck-filter" placeholder="Buscar decks..."
-                                aria-label="Filtrar decks">
-                            <select id="deck-sort" aria-label="Ordenar decks">
-                                <option value="name-asc">A-Z</option>
-                                <option value="name-desc">Z-A</option>
-                                <option value="cards">Mais cartões</option>
-                                <option value="progress">Progresso</option>
-                            </select>
-                        </div>
-                        <button class="btn-primary" id="create-deck-btn">
-                            <i class="fas fa-plus"></i>
-                            Novo Deck
-                        </button>
+            <!-- Barra secundária -->
+            <div class="decks-subheader">
+                <h2 class="subheader-title">Gerencie seus decks de estudo</h2>
+                <div class="subheader-actions">
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="Buscar decks..." aria-label="Buscar decks">
                     </div>
+                    <div class="sort-container">
+                        <select class="sort-select">
+                            <option value="az">A-Z</option>
+                            <option value="za">Z-A</option>
+                            <option value="progress">Progresso</option>
+                            <option value="cards">Quantidade de cards</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary btn-new-deck">
+                        <i class="fas fa-plus"></i> Novo Deck
+                    </button>
                 </div>
+            </div>
 
-                <!-- Grid of decks -->
+            <div class="decks-container">
                 <div class="decks-grid">
-                    <!-- Decks serão inseridos aqui via JavaScript -->
+                    <!-- Card para Criar Novo Deck -->
+                    <div class="deck-card create-deck">
+                        <div class="create-deck-content">
+                            <div class="create-icon">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <h3>Criar Novo Deck</h3>
+                            <p>Adicione um novo conjunto de flashcards</p>
+                        </div>
+                    </div>
+
+                    <!-- Deck Card - Matemática -->
+                    <div class="deck-card">
+                        <div class="deck-card-header">
+                            <div class="deck-icon" style="background-color: #4f64ff;">
+                                <i class="fas fa-square-root-alt"></i>
+                            </div>
+                            <div class="deck-options">
+                                <button class="deck-menu-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="deck-menu">
+                                    <button class="menu-item edit-deck">
+                                        <i class="fas fa-edit"></i>
+                                        <span>Editar</span>
+                                    </button>
+                                    <button class="menu-item share-deck">
+                                        <i class="fas fa-share-alt"></i>
+                                        <span>Compartilhar</span>
+                                    </button>
+                                    <button class="menu-item duplicate-deck">
+                                        <i class="fas fa-copy"></i>
+                                        <span>Duplicar</span>
+                                    </button>
+                                    <button class="menu-item delete-deck">
+                                        <i class="fas fa-trash-alt"></i>
+                                        <span>Excluir</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="deck-card-body">
+                            <h3 class="deck-title">Álgebra Linear</h3>
+                            <div class="deck-meta">
+                                <span class="deck-cards-count"><i class="fas fa-clone"></i> 32 flashcards</span>
+                                <span class="deck-last-review">Última revisão: 3 dias atrás</span>
+                            </div>
+                            <div class="deck-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%; background-color: #4f64ff;"></div>
+                                </div>
+                                <div class="progress-text">75% concluído</div>
+                            </div>
+                        </div>
+                        <div class="deck-card-footer">
+                            <button class="btn-deck-action study-deck">
+                                <i class="fas fa-book-open"></i>
+                                <span>Estudar</span>
+                            </button>
+                            <button class="btn-deck-action view-deck">
+                                <i class="fas fa-eye"></i>
+                                <span>Visualizar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Deck Card - Inglês -->
+                    <div class="deck-card">
+                        <div class="deck-card-header">
+                            <div class="deck-icon" style="background-color: #35bd6f;">
+                                <i class="fas fa-language"></i>
+                            </div>
+                            <div class="deck-options">
+                                <button class="deck-menu-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="deck-menu">
+                                    <button class="menu-item edit-deck">
+                                        <i class="fas fa-edit"></i>
+                                        <span>Editar</span>
+                                    </button>
+                                    <button class="menu-item share-deck">
+                                        <i class="fas fa-share-alt"></i>
+                                        <span>Compartilhar</span>
+                                    </button>
+                                    <button class="menu-item duplicate-deck">
+                                        <i class="fas fa-copy"></i>
+                                        <span>Duplicar</span>
+                                    </button>
+                                    <button class="menu-item delete-deck">
+                                        <i class="fas fa-trash-alt"></i>
+                                        <span>Excluir</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="deck-card-body">
+                            <h3 class="deck-title">Vocabulário Avançado</h3>
+                            <div class="deck-meta">
+                                <span class="deck-cards-count"><i class="fas fa-clone"></i> 48 flashcards</span>
+                                <span class="deck-last-review">Última revisão: Hoje</span>
+                            </div>
+                            <div class="deck-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 45%; background-color: #35bd6f;"></div>
+                                </div>
+                                <div class="progress-text">45% concluído</div>
+                            </div>
+                        </div>
+                        <div class="deck-card-footer">
+                            <button class="btn-deck-action study-deck">
+                                <i class="fas fa-book-open"></i>
+                                <span>Estudar</span>
+                            </button>
+                            <button class="btn-deck-action view-deck">
+                                <i class="fas fa-eye"></i>
+                                <span>Visualizar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Deck Card - Programação -->
+                    <div class="deck-card">
+                        <div class="deck-card-header">
+                            <div class="deck-icon" style="background-color: #ff9639;">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="deck-options">
+                                <button class="deck-menu-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="deck-menu">
+                                    <button class="menu-item edit-deck">
+                                        <i class="fas fa-edit"></i>
+                                        <span>Editar</span>
+                                    </button>
+                                    <button class="menu-item share-deck">
+                                        <i class="fas fa-share-alt"></i>
+                                        <span>Compartilhar</span>
+                                    </button>
+                                    <button class="menu-item duplicate-deck">
+                                        <i class="fas fa-copy"></i>
+                                        <span>Duplicar</span>
+                                    </button>
+                                    <button class="menu-item delete-deck">
+                                        <i class="fas fa-trash-alt"></i>
+                                        <span>Excluir</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="deck-card-body">
+                            <h3 class="deck-title">JavaScript ES6+</h3>
+                            <div class="deck-meta">
+                                <span class="deck-cards-count"><i class="fas fa-clone"></i> 65 flashcards</span>
+                                <span class="deck-last-review">Última revisão: 5 dias atrás</span>
+                            </div>
+                            <div class="deck-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 90%; background-color: #ff9639;"></div>
+                                </div>
+                                <div class="progress-text">90% concluído</div>
+                            </div>
+                        </div>
+                        <div class="deck-card-footer">
+                            <button class="btn-deck-action study-deck">
+                                <i class="fas fa-book-open"></i>
+                                <span>Estudar</span>
+                            </button>
+                            <button class="btn-deck-action view-deck">
+                                <i class="fas fa-eye"></i>
+                                <span>Visualizar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Deck Card - História -->
+                    <div class="deck-card">
+                        <div class="deck-card-header">
+                            <div class="deck-icon" style="background-color: #ff4e6a;">
+                                <i class="fas fa-landmark"></i>
+                            </div>
+                            <div class="deck-options">
+                                <button class="deck-menu-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="deck-menu">
+                                    <button class="menu-item edit-deck">
+                                        <i class="fas fa-edit"></i>
+                                        <span>Editar</span>
+                                    </button>
+                                    <button class="menu-item share-deck">
+                                        <i class="fas fa-share-alt"></i>
+                                        <span>Compartilhar</span>
+                                    </button>
+                                    <button class="menu-item duplicate-deck">
+                                        <i class="fas fa-copy"></i>
+                                        <span>Duplicar</span>
+                                    </button>
+                                    <button class="menu-item delete-deck">
+                                        <i class="fas fa-trash-alt"></i>
+                                        <span>Excluir</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="deck-card-body">
+                            <h3 class="deck-title">Revolução Industrial</h3>
+                            <div class="deck-meta">
+                                <span class="deck-cards-count"><i class="fas fa-clone"></i> 28 flashcards</span>
+                                <span class="deck-last-review">Última revisão: 1 semana atrás</span>
+                            </div>
+                            <div class="deck-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 60%; background-color: #ff4e6a;"></div>
+                                </div>
+                                <div class="progress-text">60% concluído</div>
+                            </div>
+                        </div>
+                        <div class="deck-card-footer">
+                            <button class="btn-deck-action study-deck">
+                                <i class="fas fa-book-open"></i>
+                                <span>Estudar</span>
+                            </button>
+                            <button class="btn-deck-action view-deck">
+                                <i class="fas fa-eye"></i>
+                                <span>Visualizar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Deck Card - Biologia -->
+                    <div class="deck-card">
+                        <div class="deck-card-header">
+                            <div class="deck-icon" style="background-color: #11c5c5;">
+                                <i class="fas fa-dna"></i>
+                            </div>
+                            <div class="deck-options">
+                                <button class="deck-menu-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="deck-menu">
+                                    <button class="menu-item edit-deck">
+                                        <i class="fas fa-edit"></i>
+                                        <span>Editar</span>
+                                    </button>
+                                    <button class="menu-item share-deck">
+                                        <i class="fas fa-share-alt"></i>
+                                        <span>Compartilhar</span>
+                                    </button>
+                                    <button class="menu-item duplicate-deck">
+                                        <i class="fas fa-copy"></i>
+                                        <span>Duplicar</span>
+                                    </button>
+                                    <button class="menu-item delete-deck">
+                                        <i class="fas fa-trash-alt"></i>
+                                        <span>Excluir</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="deck-card-body">
+                            <h3 class="deck-title">Biologia Celular</h3>
+                            <div class="deck-meta">
+                                <span class="deck-cards-count"><i class="fas fa-clone"></i> 52 flashcards</span>
+                                <span class="deck-last-review">Última revisão: 2 dias atrás</span>
+                            </div>
+                            <div class="deck-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 25%; background-color: #11c5c5;"></div>
+                                </div>
+                                <div class="progress-text">25% concluído</div>
+                            </div>
+                        </div>
+                        <div class="deck-card-footer">
+                            <button class="btn-deck-action study-deck">
+                                <i class="fas fa-book-open"></i>
+                                <span>Estudar</span>
+                            </button>
+                            <button class="btn-deck-action view-deck">
+                                <i class="fas fa-eye"></i>
+                                <span>Visualizar</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal para criar/editar deck -->
+    <!-- Modal para Criar/Editar Deck -->
     <div class="modal" id="deck-modal">
-        <div class="modal-content">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
             <div class="modal-header">
-                <h3 id="deck-modal-title">Criar Novo Deck</h3>
-                <button class="modal-close-btn" aria-label="Fechar modal">&times;</button>
+                <h3 class="modal-title">Novo Deck</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <form id="deck-form">
                     <div class="form-group">
-                        <label for="deck-title">Título</label>
-                        <input type="text" id="deck-title" required placeholder="Digite o título do deck">
+                        <label for="deck-title">Título do Deck</label>
+                        <input type="text" id="deck-title" placeholder="Digite o título do deck" required>
                     </div>
                     <div class="form-group">
-                        <label for="deck-color">Cor</label>
-                        <div class="color-options">
-                            <input type="color" id="deck-color" value="#4f6bed">
-                            <div class="color-presets">
-                                <span class="color-preset" style="background-color: #4f6bed"
-                                    data-color="#4f6bed"></span>
-                                <span class="color-preset" style="background-color: #4caf50"
-                                    data-color="#4caf50"></span>
-                                <span class="color-preset" style="background-color: #ff9800"
-                                    data-color="#ff9800"></span>
-                                <span class="color-preset" style="background-color: #e91e63"
-                                    data-color="#e91e63"></span>
-                                <span class="color-preset" style="background-color: #009688"
-                                    data-color="#009688"></span>
-                                <span class="color-preset" style="background-color: #673ab7"
-                                    data-color="#673ab7"></span>
+                        <label>Ícone</label>
+                        <div class="icon-selector">
+                            <div class="icon-picker show">
+                                <div class="icon-option selected" data-icon="fa-square-root-alt">
+                                    <i class="fas fa-square-root-alt"></i>
+                                </div>
+                                <div class="icon-option" data-icon="fa-language">
+                                    <i class="fas fa-language"></i>
+                                </div>
+                                <div class="icon-option" data-icon="fa-code">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <div class="icon-option" data-icon="fa-landmark">
+                                    <i class="fas fa-landmark"></i>
+                                </div>
+                                <div class="icon-option" data-icon="fa-dna">
+                                    <i class="fas fa-dna"></i>
+                                </div>
+                                <div class="icon-option" data-icon="fa-chart-pie">
+                                    <i class="fas fa-chart-pie"></i>
+                                </div>
+                                <div class="icon-option" data-icon="fa-atom">
+                                    <i class="fas fa-atom"></i>
+                                </div>
+                                <div class="icon-option" data-icon="fa-paint-brush">
+                                    <i class="fas fa-paint-brush"></i>
+                                </div>
+                                <div class="icon-option" data-icon="fa-globe-americas">
+                                    <i class="fas fa-globe-americas"></i>
+                                </div>
+                                <div class="icon-option" data-icon="fa-calculator">
+                                    <i class="fas fa-calculator"></i>
+                                </div>
+                                <div class="icon-option" data-icon="fa-book">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <div class="icon-option" data-icon="fa-music">
+                                    <i class="fas fa-music"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="deck-icon">Ícone</label>
-                        <div class="icon-options">
-                            <select id="deck-icon">
-                                <option value="fa-square-root-variable">Matemática</option>
-                                <option value="fa-language">Idiomas</option>
-                                <option value="fa-hashtag">Números</option>
-                                <option value="fa-book-bible">Religião</option>
-                                <option value="fa-flask">Ciência</option>
-                                <option value="fa-globe">Geografia</option>
-                                <option value="fa-music">Música</option>
-                                <option value="fa-futbol">Esportes</option>
-                                <option value="fa-laptop-code">Tecnologia</option>
-                                <option value="fa-heartbeat">Saúde</option>
-                                <option value="fa-paw">Animais</option>
-                                <option value="fa-brain">Psicologia</option>
-                                <option value="fa-paint-brush">Arte</option>
-                                <option value="fa-language">Idiomas</option>
-                                <option value="fa-code">Programação</option>
-                                <option value="fa-landmark">História</option>
-                                <option value="fa-dna">Biologia</option>
-                                <option value="fa-bullhorn">Marketing</option>
-                                <option value="fa-chart-line">Economia</option>
-                            </select>
-                            <div class="icon-preview">
-                                <i id="icon-preview" class="fas fa-square-root-variable"></i>
+                        <label>Cor</label>
+                        <div class="color-selector">
+                            <div class="color-preview" style="background-color: #4f64ff;"></div>
+                            <div class="color-options">
+                                <div class="color-option selected" data-color="#4f64ff"
+                                    style="background-color: #4f64ff;"></div>
+                                <div class="color-option" data-color="#35bd6f" style="background-color: #35bd6f;"></div>
+                                <div class="color-option" data-color="#ff9639" style="background-color: #ff9639;"></div>
+                                <div class="color-option" data-color="#ff4e6a" style="background-color: #ff4e6a;"></div>
+                                <div class="color-option" data-color="#11c5c5" style="background-color: #11c5c5;"></div>
+                                <div class="color-option" data-color="#9665ff" style="background-color: #9665ff;"></div>
+                                <div class="color-option" data-color="#ff6b8a" style="background-color: #ff6b8a;"></div>
+                                <div class="color-option" data-color="#00d2d3" style="background-color: #00d2d3;"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary" id="deck-cancel-btn">Cancelar</button>
-                        <button type="submit" class="btn-primary" id="deck-save-btn">Salvar</button>
-                    </div>
+                    <!-- Campos de categoria e descrição removidos -->
                 </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary cancel-modal">Cancelar</button>
+                <button class="btn-primary save-deck">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação para Exclusão -->
+    <div class="modal" id="confirm-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container confirm-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirmar Exclusão</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir este deck? Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary cancel-delete">Cancelar</button>
+                <button class="btn-danger confirm-delete">Excluir</button>
             </div>
         </div>
     </div>
@@ -167,9 +485,8 @@
     <div id="notification-container" class="notification-container"></div>
 
     <!-- Scripts -->
-    <script src="js/notifications.js" type="module"></script>
-    <script src="js/auth.js" type="module"></script>
-    <script src="js/decks.js" type="module"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/decks.js"></script>
 </body>
 
 </html>
