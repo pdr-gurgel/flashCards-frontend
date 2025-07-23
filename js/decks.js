@@ -1,4 +1,11 @@
 // Decks.js - Gerenciamento de decks de flashcards
+// Importar estilos CSS para o build com Vite
+import '../css/dashboard.css';
+import '../css/decks.css';
+
+// Importar funções compartilhadas
+import { initTheme, toggleTheme } from './theme.js';
+
 document.addEventListener('DOMContentLoaded', function () {
     // Inicializar o tema
     initTheme();

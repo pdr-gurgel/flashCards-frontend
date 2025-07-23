@@ -5,6 +5,9 @@ import '../css/dashboard.css';
 // Importando funções de autenticação
 import { protectRoute, getCurrentUser, logout } from './auth.js';
 
+// Importando funções de tema
+import { initTheme, toggleTheme } from './theme.js';
+
 // Dashboard functionality
 document.addEventListener('DOMContentLoaded', function () {
     // Verificar se o usuário está autenticado
