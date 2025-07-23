@@ -127,34 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Autenticação já verificada no início da função
 });
 
-// Funções de gerenciamento de tema
-function initTheme() {
-    // Verificar se há um tema salvo no localStorage
-    const savedTheme = localStorage.getItem('theme');
-
-    // Se o usuário já escolheu um tema antes, use-o
-    if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    } else {
-        // Tema default agora é escuro
-        document.documentElement.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-    }
-}
-
-function toggleTheme() {
-    // Verificar tema atual
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-
-    // Alternar para o outro tema
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-
-    // Aplicar o novo tema
-    document.documentElement.setAttribute('data-theme', newTheme);
-
-    // Salvar preferência do usuário
-    localStorage.setItem('theme', newTheme);
-}
+// Funções de tema importadas do theme.js
 
 // Variáveis globais para controlar o mês e ano atual do calendário
 let currentViewMonth;
