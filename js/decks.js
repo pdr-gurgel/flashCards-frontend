@@ -320,24 +320,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    // Adicionar event listeners para os botões de editar
-    editButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const deckCard = this.closest('.deck-card');
-            const deckId = parseInt(deckCard.getAttribute('data-id'));
-            editDeck(deckId);
-        });
-    });
-
-    // Deletar deck
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const deckCard = this.closest('.deck-card');
-            const deckId = parseInt(deckCard.getAttribute('data-id'));
-            currentDeckId = deckId;
-            openModal(confirmModal);
-        });
-    });
+    // Event listeners para botões de deletar são adicionados em renderDeck()
 
     // Fechar modais
     modalOverlays.forEach(overlay => {
@@ -370,9 +353,11 @@ document.addEventListener('DOMContentLoaded', async function () {
             const selectedColor = document.querySelector('.color-option.selected').getAttribute('data-color');
 
             if (currentDeckId) {
-                // Atualizar deck existente (ainda não integrado ao backend)
-                updateDeck(currentDeckId, title, selectedIcon, selectedColor);
-                showNotification('Deck atualizado com sucesso!', 'success');
+                // Atualizar deck existente via API
+                const success = await updateDeck(currentDeckId, title, selectedIcon, selectedColor);
+                if (success) {
+                    closeModal(deckModal);
+                }
             } else {
                 // Criar novo deck via backend
                 try {
@@ -390,13 +375,12 @@ document.addEventListener('DOMContentLoaded', async function () {
                     decks.push(newDeck);
                     renderDeck(newDeck);
                     showNotification('Novo deck criado com sucesso!', 'success');
+                    closeModal(deckModal);
                 } catch (error) {
                     console.error('Erro ao criar deck:', error);
                     showNotification('Erro ao criar deck. Tente novamente.', 'error');
                 }
             }
-
-            closeModal(deckModal);
         }
     });
 
@@ -472,30 +456,48 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // Atualizar deck existente
-    function updateDeck(id, title, icon, color) {
-        const index = decks.findIndex(d => d.id === id);
+    async function updateDeck(id, title, icon, color) {
+        try {
+            // Primeiro, faz a chamada para a API
+            const token = getToken();
+            const response = await axios.put(`${API_BASE_URL}/decks/${id}`,
+                { title, icon, color },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
 
-        if (index !== -1) {
-            // Atualizar no array
-            decks[index] = {
-                ...decks[index],
-                title,
-                icon,
-                color
-            };
+            const updatedDeck = response.data;
 
-            // Atualizar na UI
-            const deckCard = document.querySelector(`.deck-card[data-id="${id}"]`);
+            // Atualizar no array local
+            const index = decks.findIndex(d => d.id === id);
+            if (index !== -1) {
+                decks[index] = {
+                    ...decks[index],
+                    title: updatedDeck.title,
+                    icon: updatedDeck.icon,
+                    color: updatedDeck.color
+                };
 
-            if (deckCard) {
-                // Atualizar título
-                deckCard.querySelector('.deck-title').textContent = title;
+                // Atualizar na UI
+                const deckCard = document.querySelector(`.deck-card[data-id="${id}"]`);
 
-                // Atualizar ícone
-                const deckIcon = deckCard.querySelector('.deck-icon i');
-                deckIcon.className = `fas ${icon}`;
-                deckCard.querySelector('.deck-icon').style.backgroundColor = color;
+                if (deckCard) {
+                    // Atualizar título
+                    deckCard.querySelector('.deck-title').textContent = updatedDeck.title;
+
+                    // Atualizar ícone
+                    const deckIcon = deckCard.querySelector('.deck-icon i');
+                    deckIcon.className = `fas ${updatedDeck.icon}`;
+                    deckCard.querySelector('.deck-icon').style.backgroundColor = updatedDeck.color;
+                }
             }
+
+            // Mostrar notificação de sucesso
+            showNotification('Deck atualizado com sucesso!', 'success');
+            return true;
+        } catch (error) {
+            console.error('Erro ao atualizar deck:', error);
+            showNotification('Erro ao atualizar o deck. Tente novamente.', 'error');
+            return false;
         }
     }
 
@@ -538,7 +540,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 <div class="deck-card-body">
                     <h3 class="deck-title">${deck.title}</h3>
                     <div class="deck-meta">
-                        <span class="deck-cards-count"><i class="fas fa-clone"></i> ${deck.cardsCount} flashcards</span>
+                        <span class="deck-cards-count"><i class="fas fa-clone"></i> ${deck.cardsCount || 0} flashcards</span>
                     </div>
                 </div>
                 <div class="deck-card-footer">
@@ -561,39 +563,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Adicionar event listeners aos novos botões
         const newDeckCard = decksGrid.querySelector(`.deck-card[data-id="${deck.id}"]`);
 
-        // Botão editar
+        // Botão editar - usar a função editDeck existente
         const editBtn = newDeckCard.querySelector('.edit-deck');
         editBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             const deckId = parseInt(newDeckCard.getAttribute('data-id'));
-            const deck = decks.find(d => d.id === deckId);
-
-            if (deck) {
-                deckTitle.value = deck.title;
-                iconPreview.className = `fas ${deck.icon}`;
-                colorPreview.style.backgroundColor = deck.color;
-
-                iconOptions.forEach(option => {
-                    const icon = option.getAttribute('data-icon');
-                    option.classList.toggle('selected', icon === deck.icon);
-                });
-                iconPreview.className = `fas ${deck.icon}`;
-
-                colorOptions.forEach(option => {
-                    const color = option.getAttribute('data-color');
-                    option.classList.toggle('selected', color === deck.color);
-                });
-                colorPreview.style.backgroundColor = deck.color;
-
-                currentDeckId = deckId;
-                openModal(deckModal);
-                iconPreview.parentElement.style.backgroundColor = deck.color;
-
-                document.querySelector('.modal-title').textContent = 'Editar Deck';
-                currentDeckId = deck.id;
-
-                openModal(deckModal);
-            }
+            editDeck(deckId);
         });
 
         // Botão excluir
