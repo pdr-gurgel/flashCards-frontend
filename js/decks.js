@@ -385,11 +385,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 
     // Confirmar exclusão
-    confirmDeleteButton.addEventListener('click', function () {
+    confirmDeleteButton.addEventListener('click', async function () {
         if (currentDeckId) {
-            deleteDeck(currentDeckId);
-            showNotification('Deck excluído com sucesso!', 'success');
-            closeModal(confirmModal);
+            const success = await deleteDeck(currentDeckId);
+            if (success) {
+                closeModal(confirmModal);
+            }
         }
     });
 
@@ -502,21 +503,36 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // Excluir deck
-    function deleteDeck(id) {
-        const index = decks.findIndex(d => d.id === id);
-
-        if (index !== -1) {
-            // Remover do array
-            decks.splice(index, 1);
-
-            // Remover da UI
-            const deckCard = document.querySelector(`.deck-card[data-id="${id}"]`);
-            if (deckCard) {
-                deckCard.style.opacity = 0;
-                setTimeout(() => {
-                    deckCard.remove();
-                }, 300);
+    async function deleteDeck(id) {
+        try {
+            const token = getToken();
+            const response = await axios.delete(`${API_BASE_URL}/decks/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (response.status === 204) {
+                // Remover do array
+                const index = decks.findIndex(d => d.id === id);
+                if (index !== -1) {
+                    decks.splice(index, 1);
+                }
+                // Remover da UI
+                const deckCard = document.querySelector(`.deck-card[data-id="${id}"]`);
+                if (deckCard) {
+                    deckCard.style.opacity = 0;
+                    setTimeout(() => {
+                        deckCard.remove();
+                    }, 300);
+                }
+                showNotification('Deck excluído com sucesso!', 'success');
+                return true;
+            } else {
+                showNotification('Erro ao excluir o deck. Tente novamente.', 'error');
+                return false;
             }
+        } catch (error) {
+            console.error('Erro ao excluir deck:', error);
+            showNotification('Erro ao excluir o deck. Tente novamente.', 'error');
+            return false;
         }
     }
 
