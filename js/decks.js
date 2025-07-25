@@ -5,15 +5,19 @@ import '../css/decks.css';
 
 // Importar funções compartilhadas
 import { initTheme, toggleTheme } from './theme.js';
+import axios from 'axios';
+import { getToken } from './auth.js';
 
-document.addEventListener('DOMContentLoaded', function () {
+const API_BASE_URL = 'https://flashcards-backend-ejyn.onrender.com';
+
+document.addEventListener('DOMContentLoaded', async function () {
     // Inicializar o tema
     initTheme();
-    
+
     // Configurar botões de tema e logout
     const themeToggle = document.getElementById('theme-toggle');
     const logoutBtn = document.getElementById('logout-btn');
-    
+
     // Exibir data atual
     const dateDisplay = document.querySelector('.date-display');
     if (dateDisplay) {
@@ -24,22 +28,22 @@ document.addEventListener('DOMContentLoaded', function () {
         const weekday = new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(now);
         dateDisplay.innerHTML = `<strong>${weekday}</strong>, ${day} ${month} ${year}`;
     }
-    
+
     // Event listeners para botões de tema e logout
     if (themeToggle) {
         themeToggle.addEventListener('click', toggleTheme);
     }
-    
+
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
+        logoutBtn.addEventListener('click', function () {
             // Importar a função de logout do módulo de autenticação quando estiver pronto
             window.location.href = 'login.html';
         });
     }
-    
+
     // Atualizar os deck cards existentes para o novo layout com botões diretos
     updateExistingDeckCards();
-    
+
     // Elementos da interface
     const createDeckCard = document.querySelector('.create-deck');
     const deckModal = document.getElementById('deck-modal');
@@ -85,53 +89,53 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
-    
+
     // Elementos de busca e ordenação
     const searchInput = document.querySelector('.search-input');
     const sortSelect = document.querySelector('.sort-select');
-    
+
     // Adicionar event listeners para busca e ordenação
     if (searchInput) {
         searchInput.addEventListener('input', filterDecks);
     }
-    
+
     if (sortSelect) {
         sortSelect.addEventListener('change', sortDecks);
     }
-    
+
     // Função para filtrar decks baseado na pesquisa
     function filterDecks() {
         const searchTerm = searchInput.value.toLowerCase().trim();
         const currentSort = sortSelect.value;
-        
+
         // Obter todos os cartões de deck, exceto o de criação
         const deckCards = document.querySelectorAll('.deck-card:not(.create-deck)');
-        
+
         // Filtrar decks baseado no termo de busca
         deckCards.forEach(card => {
             const title = card.querySelector('.deck-title').textContent.toLowerCase();
             const shouldShow = title.includes(searchTerm);
-            
+
             // Mostrar ou esconder o card
             card.style.display = shouldShow ? '' : 'none';
         });
-        
+
         // Aplicar ordenação atual aos resultados filtrados
         applySorting(currentSort);
     }
-    
+
     // Função para ordenar os decks
     function sortDecks() {
         const sortType = sortSelect.value;
         applySorting(sortType);
     }
-    
+
     // Função auxiliar para aplicar a ordenação
     function applySorting(sortType) {
         const deckCards = Array.from(document.querySelectorAll('.deck-card:not(.create-deck)'));
         const decksGrid = document.querySelector('.decks-grid');
         const createDeckCard = document.querySelector('.create-deck');
-        
+
         // Ordenar os cards baseado no critério selecionado
         deckCards.sort((a, b) => {
             switch (sortType) {
@@ -141,11 +145,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 case 'za':
                     return b.querySelector('.deck-title').textContent
                         .localeCompare(a.querySelector('.deck-title').textContent);
-                case 'progress':
-                    // Extrair percentual de progresso (remove o % e converte para número)
-                    const progressA = parseInt(a.querySelector('.progress-text').textContent);
-                    const progressB = parseInt(b.querySelector('.progress-text').textContent);
-                    return progressB - progressA; // Maior progresso primeiro
                 case 'cards':
                     // Extrair número de cards
                     const cardsTextA = a.querySelector('.deck-cards-count').textContent;
@@ -157,13 +156,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     return 0;
             }
         });
-        
+
         // Remover os cards da grid e re-inserir na nova ordem
         deckCards.forEach(card => card.remove());
-        
+
         // Inserir o card de criação primeiro
         decksGrid.appendChild(createDeckCard);
-        
+
         // Inserir os cards ordenados
         deckCards.forEach(card => {
             // Só adicionar de volta se não estiver escondido pela busca
@@ -178,53 +177,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Estado da aplicação
     let currentDeckId = null;
-    let decks = [
-        {
-            id: 1,
-            title: "Álgebra Linear",
-            icon: "fa-square-root-alt",
-            color: "#4f64ff",
-            cardsCount: 32,
-            lastReview: "3 dias atrás",
-            progress: 75
-        },
-        {
-            id: 2,
-            title: "Vocabulário Avançado",
-            icon: "fa-language",
-            color: "#35bd6f",
-            cardsCount: 48,
-            lastReview: "Hoje",
-            progress: 45
-        },
-        {
-            id: 3,
-            title: "JavaScript ES6+",
-            icon: "fa-code",
-            color: "#ff9639",
-            cardsCount: 65,
-            lastReview: "5 dias atrás",
-            progress: 90
-        },
-        {
-            id: 4,
-            title: "Revolução Industrial",
-            icon: "fa-landmark",
-            color: "#ff4e6a",
-            cardsCount: 28,
-            lastReview: "1 semana atrás",
-            progress: 60
-        },
-        {
-            id: 5,
-            title: "Biologia Celular",
-            icon: "fa-dna",
-            color: "#11c5c5",
-            cardsCount: 52,
-            lastReview: "2 dias atrás",
-            progress: 25
+    let decks = [];
+
+    // Função para buscar decks do backend
+    async function fetchDecks() {
+        try {
+            const token = getToken();
+            const response = await axios.get(`${API_BASE_URL}/decks`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            decks = response.data;
+            renderAllDecks();
+        } catch (error) {
+            console.error('Erro ao buscar decks:', error);
+            showNotification('Erro ao carregar decks. Faça login novamente.', 'error');
         }
-    ];
+    }
+
+    // Função para renderizar todos os decks
+    function renderAllDecks() {
+        // Limpa todos os decks (exceto o card de criar)
+        const deckCards = document.querySelectorAll('.deck-card:not(.create-deck)');
+        deckCards.forEach(card => card.remove());
+        // Renderiza cada deck
+        decks.forEach(deck => renderDeck(deck));
+    }
 
     // Função para abrir o modal de criação de deck
     function openCreateDeckModal() {
@@ -233,10 +212,10 @@ document.addEventListener('DOMContentLoaded', function () {
         currentDeckId = null;
         document.querySelector('.modal-title').textContent = 'Novo Deck';
     }
-    
+
     // Adicionar event listener ao card de criação
     createDeckCard.addEventListener('click', openCreateDeckModal);
-    
+
     // Adicionar event listener ao novo botão da barra secundária
     const newDeckButton = document.querySelector('.btn-new-deck');
     if (newDeckButton) {
@@ -341,24 +320,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Adicionar event listeners para os botões de editar
-    editButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const deckCard = this.closest('.deck-card');
-            const deckId = parseInt(deckCard.getAttribute('data-id'));
-            editDeck(deckId);
-        });
-    });
-
-    // Deletar deck
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const deckCard = this.closest('.deck-card');
-            const deckId = parseInt(deckCard.getAttribute('data-id'));
-            currentDeckId = deckId;
-            openModal(confirmModal);
-        });
-    });
+    // Event listeners para botões de deletar são adicionados em renderDeck()
 
     // Fechar modais
     modalOverlays.forEach(overlay => {
@@ -384,32 +346,51 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Salvar deck
-    saveButton.addEventListener('click', function () {
+    saveButton.addEventListener('click', async function () {
         if (validateForm()) {
             const title = deckTitle.value;
             const selectedIcon = document.querySelector('.icon-option.selected').getAttribute('data-icon');
             const selectedColor = document.querySelector('.color-option.selected').getAttribute('data-color');
 
             if (currentDeckId) {
-                // Atualizar deck existente
-                updateDeck(currentDeckId, title, selectedIcon, selectedColor);
-                showNotification('Deck atualizado com sucesso!', 'success');
+                // Atualizar deck existente via API
+                const success = await updateDeck(currentDeckId, title, selectedIcon, selectedColor);
+                if (success) {
+                    closeModal(deckModal);
+                }
             } else {
-                // Criar novo deck
-                createDeck(title, selectedIcon, selectedColor);
-                showNotification('Novo deck criado com sucesso!', 'success');
+                // Criar novo deck via backend
+                try {
+                    const token = getToken();
+                    const response = await axios.post(`${API_BASE_URL}/decks`, {
+                        title,
+                        icon: selectedIcon,
+                        color: selectedColor
+                    }, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    const newDeck = response.data;
+                    decks.push(newDeck);
+                    renderDeck(newDeck);
+                    showNotification('Novo deck criado com sucesso!', 'success');
+                    closeModal(deckModal);
+                } catch (error) {
+                    console.error('Erro ao criar deck:', error);
+                    showNotification('Erro ao criar deck. Tente novamente.', 'error');
+                }
             }
-
-            closeModal(deckModal);
         }
     });
 
     // Confirmar exclusão
-    confirmDeleteButton.addEventListener('click', function () {
+    confirmDeleteButton.addEventListener('click', async function () {
         if (currentDeckId) {
-            deleteDeck(currentDeckId);
-            showNotification('Deck excluído com sucesso!', 'success');
-            closeModal(confirmModal);
+            const success = await deleteDeck(currentDeckId);
+            if (success) {
+                closeModal(confirmModal);
+            }
         }
     });
 
@@ -425,21 +406,21 @@ document.addEventListener('DOMContentLoaded', function () {
     // Resetar formulário
     function resetForm() {
         deckTitle.value = '';
-        
+
         // Resetar ícone e cor
         const defaultIconOption = document.querySelector('.icon-option[data-icon="fa-square-root-alt"]');
         const defaultColorOption = document.querySelector('.color-option[data-color="#4f64ff"]');
-        
+
         if (defaultIconOption) {
             iconOptions.forEach(opt => opt.classList.remove('selected'));
             defaultIconOption.classList.add('selected');
         }
-        
+
         if (defaultColorOption) {
             colorOptions.forEach(opt => opt.classList.remove('selected'));
             defaultColorOption.classList.add('selected');
         }
-        
+
         // O seletor de ícones está sempre visível, não precisamos escondê-lo
     }
 
@@ -468,9 +449,7 @@ document.addEventListener('DOMContentLoaded', function () {
             title,
             icon,
             color,
-            cardsCount: 0,
-            lastReview: 'Nunca',
-            progress: 0
+            cardsCount: 0
         };
 
         decks.push(newDeck);
@@ -478,52 +457,82 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Atualizar deck existente
-    function updateDeck(id, title, icon, color) {
-        const index = decks.findIndex(d => d.id === id);
+    async function updateDeck(id, title, icon, color) {
+        try {
+            // Primeiro, faz a chamada para a API
+            const token = getToken();
+            const response = await axios.put(`${API_BASE_URL}/decks/${id}`,
+                { title, icon, color },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
 
-        if (index !== -1) {
-            // Atualizar no array
-            decks[index] = {
-                ...decks[index],
-                title,
-                icon,
-                color
-            };
+            const updatedDeck = response.data;
 
-            // Atualizar na UI
-            const deckCard = document.querySelector(`.deck-card[data-id="${id}"]`);
+            // Atualizar no array local
+            const index = decks.findIndex(d => d.id === id);
+            if (index !== -1) {
+                decks[index] = {
+                    ...decks[index],
+                    title: updatedDeck.title,
+                    icon: updatedDeck.icon,
+                    color: updatedDeck.color
+                };
 
-            if (deckCard) {
-                // Atualizar título
-                deckCard.querySelector('.deck-title').textContent = title;
+                // Atualizar na UI
+                const deckCard = document.querySelector(`.deck-card[data-id="${id}"]`);
 
-                // Atualizar ícone
-                const deckIcon = deckCard.querySelector('.deck-icon i');
-                deckIcon.className = `fas ${icon}`;
-                deckCard.querySelector('.deck-icon').style.backgroundColor = color;
+                if (deckCard) {
+                    // Atualizar título
+                    deckCard.querySelector('.deck-title').textContent = updatedDeck.title;
 
-                // Atualizar progress fill com a cor
-                deckCard.querySelector('.progress-fill').style.backgroundColor = color;
+                    // Atualizar ícone
+                    const deckIcon = deckCard.querySelector('.deck-icon i');
+                    deckIcon.className = `fas ${updatedDeck.icon}`;
+                    deckCard.querySelector('.deck-icon').style.backgroundColor = updatedDeck.color;
+                }
             }
+
+            // Mostrar notificação de sucesso
+            showNotification('Deck atualizado com sucesso!', 'success');
+            return true;
+        } catch (error) {
+            console.error('Erro ao atualizar deck:', error);
+            showNotification('Erro ao atualizar o deck. Tente novamente.', 'error');
+            return false;
         }
     }
 
     // Excluir deck
-    function deleteDeck(id) {
-        const index = decks.findIndex(d => d.id === id);
-
-        if (index !== -1) {
-            // Remover do array
-            decks.splice(index, 1);
-
-            // Remover da UI
-            const deckCard = document.querySelector(`.deck-card[data-id="${id}"]`);
-            if (deckCard) {
-                deckCard.style.opacity = 0;
-                setTimeout(() => {
-                    deckCard.remove();
-                }, 300);
+    async function deleteDeck(id) {
+        try {
+            const token = getToken();
+            const response = await axios.delete(`${API_BASE_URL}/decks/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (response.status === 204) {
+                // Remover do array
+                const index = decks.findIndex(d => d.id === id);
+                if (index !== -1) {
+                    decks.splice(index, 1);
+                }
+                // Remover da UI
+                const deckCard = document.querySelector(`.deck-card[data-id="${id}"]`);
+                if (deckCard) {
+                    deckCard.style.opacity = 0;
+                    setTimeout(() => {
+                        deckCard.remove();
+                    }, 300);
+                }
+                showNotification('Deck excluído com sucesso!', 'success');
+                return true;
+            } else {
+                showNotification('Erro ao excluir o deck. Tente novamente.', 'error');
+                return false;
             }
+        } catch (error) {
+            console.error('Erro ao excluir deck:', error);
+            showNotification('Erro ao excluir o deck. Tente novamente.', 'error');
+            return false;
         }
     }
 
@@ -547,13 +556,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="deck-card-body">
                     <h3 class="deck-title">${deck.title}</h3>
                     <div class="deck-meta">
-                        <span class="deck-cards-count"><i class="fas fa-clone"></i> ${deck.cardsCount} flashcards</span>
-                    </div>
-                    <div class="deck-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${deck.progress}%; background-color: ${deck.color};"></div>
-                        </div>
-                        <div class="progress-text">${deck.progress}% concluído</div>
+                        <span class="deck-cards-count"><i class="fas fa-clone"></i> ${deck.cardsCount || 0} flashcards</span>
                     </div>
                 </div>
                 <div class="deck-card-footer">
@@ -576,39 +579,12 @@ document.addEventListener('DOMContentLoaded', function () {
         // Adicionar event listeners aos novos botões
         const newDeckCard = decksGrid.querySelector(`.deck-card[data-id="${deck.id}"]`);
 
-        // Botão editar
+        // Botão editar - usar a função editDeck existente
         const editBtn = newDeckCard.querySelector('.edit-deck');
         editBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             const deckId = parseInt(newDeckCard.getAttribute('data-id'));
-            const deck = decks.find(d => d.id === deckId);
-
-            if (deck) {
-                deckTitle.value = deck.title;
-                iconPreview.className = `fas ${deck.icon}`;
-                colorPreview.style.backgroundColor = deck.color;
-
-                iconOptions.forEach(option => {
-                    const icon = option.getAttribute('data-icon');
-                    option.classList.toggle('selected', icon === deck.icon);
-                });
-                iconPreview.className = `fas ${deck.icon}`;
-
-                colorOptions.forEach(option => {
-                    const color = option.getAttribute('data-color');
-                    option.classList.toggle('selected', color === deck.color);
-                });
-                colorPreview.style.backgroundColor = deck.color;
-                
-                currentDeckId = deckId;
-                openModal(deckModal);
-                iconPreview.parentElement.style.backgroundColor = deck.color;
-
-                document.querySelector('.modal-title').textContent = 'Editar Deck';
-                currentDeckId = deck.id;
-
-                openModal(deckModal);
-            }
+            editDeck(deckId);
         });
 
         // Botão excluir
@@ -618,7 +594,7 @@ document.addEventListener('DOMContentLoaded', function () {
             currentDeckId = parseInt(newDeckCard.getAttribute('data-id'));
             openModal(confirmModal);
         });
-        
+
         // Botão estudar
         const studyBtn = newDeckCard.querySelector('.study-deck');
         studyBtn.addEventListener('click', function () {
@@ -629,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 studyBtn.classList.remove('btn-animated');
             }, 500);
         });
-        
+
         // Botão visualizar
         const viewBtn = newDeckCard.querySelector('.view-deck');
         viewBtn.addEventListener('click', function () {
@@ -655,87 +631,87 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorage.setItem('theme', 'dark');
         }
     }
-    
+
     // Função para alternar entre temas claro e escuro
     function toggleTheme() {
         // Verificar tema atual
         const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-        
+
         // Alternar para o outro tema
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        
+
         // Aplicar o novo tema
         document.documentElement.setAttribute('data-theme', newTheme);
-        
+
         // Salvar preferência do usuário
         localStorage.setItem('theme', newTheme);
     }
-    
+
     // Função para atualizar os deck cards existentes no HTML para o novo formato
     function updateExistingDeckCards() {
         // Selecionar todos os deck cards (exceto o de criar)
         const deckCards = document.querySelectorAll('.deck-card:not(.create-deck)');
-        
+
         deckCards.forEach(card => {
             // 1. Remover o texto de "Última revisão" de todos os cards
             const lastReviewElement = card.querySelector('.deck-last-review');
             if (lastReviewElement) {
                 lastReviewElement.remove();
             }
-            
+
             // 2. Substituir o menu de 3 pontinhos por botões diretos
             const deckHeader = card.querySelector('.deck-card-header');
             const deckOptions = card.querySelector('.deck-options');
-            
+
             if (deckOptions) {
                 // Criar o novo container de ações
                 const deckActions = document.createElement('div');
                 deckActions.className = 'deck-actions';
-                
+
                 // Criar botão de editar
                 const editBtn = document.createElement('button');
                 editBtn.className = 'deck-action-btn edit-deck';
                 editBtn.title = 'Editar deck';
                 editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-                
+
                 // Criar botão de excluir
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'deck-action-btn delete-deck';
                 deleteBtn.title = 'Excluir deck';
                 deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-                
+
                 // Adicionar os botões ao container
                 deckActions.appendChild(editBtn);
                 deckActions.appendChild(deleteBtn);
-                
+
                 // Substituir o menu pelo novo container
                 deckHeader.replaceChild(deckActions, deckOptions);
-                
+
                 // Adicionar event listeners aos novos botões
-                editBtn.addEventListener('click', function(e) {
+                editBtn.addEventListener('click', function (e) {
                     e.stopPropagation();
                     const deckId = parseInt(card.getAttribute('data-id') || card.dataset.id || '0');
-                    
+
                     // Usar a função editDeck que já foi criada
                     editDeck(deckId);
                 });
-                
-                deleteBtn.addEventListener('click', function(e) {
+
+                deleteBtn.addEventListener('click', function (e) {
                     e.stopPropagation();
                     currentDeckId = parseInt(card.getAttribute('data-id') || card.dataset.id || '0');
                     openModal(confirmModal);
                 });
             }
-            
+
             // 2. Adicionar animação ao botão estudar
             const studyBtn = card.querySelector('.study-deck');
             if (studyBtn) {
                 // Remover event listeners antigos (se houver)
                 const newStudyBtn = studyBtn.cloneNode(true);
                 studyBtn.parentNode.replaceChild(newStudyBtn, studyBtn);
-                
+
                 // Adicionar novo event listener com animação
-                newStudyBtn.addEventListener('click', function() {
+                newStudyBtn.addEventListener('click', function () {
                     // Aplicar a animação quando clicado
                     this.classList.add('btn-animated');
                     setTimeout(() => {
@@ -796,4 +772,7 @@ document.addEventListener('DOMContentLoaded', function () {
     existingDeckCards.forEach((card, index) => {
         card.setAttribute('data-id', index + 1);
     });
+
+    // Chama fetchDecks ao carregar a página
+    await fetchDecks();
 });
