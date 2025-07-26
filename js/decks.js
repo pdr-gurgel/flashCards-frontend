@@ -5,18 +5,41 @@ import '../css/decks.css';
 
 // Importar funções compartilhadas
 import { initTheme, toggleTheme } from './theme.js';
+import { protectRoute, getCurrentUser, logout } from './auth.js';
 import axios from 'axios';
 import { getToken } from './auth.js';
 
 const API_BASE_URL = 'https://flashcards-backend-ejyn.onrender.com';
 
 document.addEventListener('DOMContentLoaded', async function () {
+    // Verificar autenticação
+    if (!protectRoute()) {
+        return; // Redireciona para o login se não estiver autenticado
+    }
+
     // Inicializar o tema
     initTheme();
+
+    // Obter informações do usuário atual
+    const currentUser = getCurrentUser() || {};
 
     // Configurar botões de tema e logout
     const themeToggle = document.getElementById('theme-toggle');
     const logoutBtn = document.getElementById('logout-btn');
+
+    // Atualizar informações do usuário na interface
+    const userNameElements = document.querySelectorAll('.user-name-display');
+    const userInitial = document.querySelector('.user-initial');
+
+    if (currentUser && currentUser.name) {
+        userNameElements.forEach(element => {
+            element.textContent = currentUser.name;
+        });
+
+        if (userInitial) {
+            userInitial.textContent = currentUser.name.charAt(0).toUpperCase();
+        }
+    }
 
     // Exibir data atual
     const dateDisplay = document.querySelector('.date-display');
@@ -35,9 +58,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', function () {
-            // Importar a função de logout do módulo de autenticação quando estiver pronto
-            window.location.href = 'login.html';
+        logoutBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            logout(); // Usa a função de logout do módulo de autenticação
         });
     }
 

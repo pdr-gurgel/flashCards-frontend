@@ -18,5 +18,8 @@
 /* Import dashboard styles */
 @import 'dashboard.css';
 
+/* Import cards styles */
+@import 'cards.css';
+
 /* Import decks styles */
 @import 'decks.css';
