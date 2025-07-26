@@ -12,6 +12,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         dashboard: resolve(__dirname, 'dashboard.html'),
         decks: resolve(__dirname, 'decks.html'),
+        cards: resolve(__dirname, 'cards.html'),
       },
     },
   },
