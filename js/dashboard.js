@@ -61,9 +61,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 case 'decks':
                     window.location.href = 'decks.html';
                     break;
-                case 'flashcards':
-                    // Implementação futura
-                    console.log('Navegando para flashcards');
+                case 'cards':
+                    window.location.href = 'cards.html';
                     break;
                 case 'study':
                     // Implementação futura
@@ -93,8 +92,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     window.location.href = 'decks.html';
                     break;
                 case 'flashcards':
-                    // Navigate to cards page or show cards section
-                    console.log('Navigating to flashcards');
+                    // Navigate to cards page
+                    window.location.href = 'cards.html';
                     break;
                 case 'study':
                     // Navigate to study mode
