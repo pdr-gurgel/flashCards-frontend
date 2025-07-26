@@ -341,117 +341,80 @@
     }
 
     .search-container {
+        width: 100%;
+    }
+
+    .search-input {
+        width: 100%;
         min-width: 0;
     }
 }
 
-/* Barra de filtros e ações */
-.cards-subheader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    padding: 20px;
+.search-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(106, 117, 202, 0.2);
+    outline: none;
+}
+
+/* Estilo para os selects de filtro */
+.filter-select,
+#deck-filter,
+#difficulty-filter {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--input-text);
+    font-size: 0.9rem;
+    cursor: pointer;
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23a0a3b8" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 16px;
+    padding-right: 36px;
+    transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .filter-select,
+[data-theme="dark"] #deck-filter,
+[data-theme="dark"] #difficulty-filter {
+    background-color: #1a1a1a;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.filter-select:focus,
+#deck-filter:focus,
+#difficulty-filter:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(106, 117, 202, 0.2);
+    outline: none;
+}
+
+/* Estilo para os options */
+.filter-select option,
+#deck-filter option,
+#difficulty-filter option {
     background-color: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-}
-
-.subheader-title {
-    font-size: 1.25rem;
-    font-weight: 600;
     color: var(--text-primary);
-    margin: 0;
-}
-
-.subheader-actions {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
-.search-container {
-    position: relative;
-    width: 300px;
+    padding: 8px 12px;
 }
 
 .search-input {
-    width: 100%;
-    padding: 10px 15px 10px 40px;
-    border-radius: 8px;
+    width: 220px;
+    padding: 8px 12px;
+    border-radius: 6px;
     border: 1px solid var(--border-color);
-    background-color: var(--input-bg);
-    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--input-text);
     font-size: 0.9rem;
-    transition: all 0.3s ease;
+    outline: none;
+    transition: all 0.2s ease;
 }
 
 .search-input:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-light);
-    outline: none;
-}
-
-.search-icon {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
-}
-
-.filter-select,
-#card-deck,
-#card-difficulty {
-    background: #111;
-    color: #fff;
-    border: 2px solid var(--color-primary);
-    border-radius: 8px;
-    padding: 8px 32px 8px 12px;
-    font-size: 0.9rem;
-    outline: none;
-    appearance: none;
-    transition: border 0.2s;
-    box-sizing: border-box;
-}
-
-.filter-select:focus,
-#card-deck:focus,
-#card-difficulty:focus {
-    border: 2px solid var(--color-primary-dark, #7c3aed);
-}
-
-.filter-select option,
-#card-deck option,
-#card-difficulty option {
-    background: #111;
-    color: #fff;
-}
-
-/* Custom arrow for select */
-.filter-select,
-#card-deck,
-#card-difficulty {
-    background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px 16px;
-}
-
-.search-input {
-    background: #111;
-    color: #fff;
-    border: 2px solid var(--color-primary);
-    border-radius: 8px;
-    padding: 8px 12px 8px 36px;
-    font-size: 1rem;
-    outline: none;
-    transition: border 0.2s;
-    box-sizing: border-box;
-}
-
-.search-input:focus {
-    border: 2px solid var(--color-primary-dark, #7c3aed);
+    box-shadow: 0 0 0 2px rgba(106, 117, 202, 0.2);
 }
 
 
