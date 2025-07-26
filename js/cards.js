@@ -9,7 +9,7 @@ import { protectRoute, getCurrentUser, logout, getToken } from './auth.js';
 import { showNotification } from './notifications.js';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'https://flashcards-backend-ejyn.onrender.com';
 
 // Configuração do Axios para incluir o token de autenticação
 const api = axios.create({
@@ -45,13 +45,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Configurar elementos da interface
     setupUIElements();
-    
+
     // Configurar eventos
     setupEventListeners();
-    
+
     // Carregar dados iniciais
     loadInitialData();
-    
+
     // Atualizar informações do usuário na interface
     updateUserInfo(currentUser);
 });
@@ -64,36 +64,36 @@ function setupUIElements() {
     // Botões e controles
     newCardBtn = document.getElementById('new-card-btn');
     console.log('Botão novo card:', newCardBtn);
-    
+
     cardModal = document.getElementById('card-modal');
     console.log('Elemento do modal de card:', cardModal);
-    
+
     confirmModal = document.getElementById('confirm-modal');
     console.log('Elemento do modal de confirmação:', confirmModal);
-    
+
     cardForm = document.getElementById('card-form');
     console.log('Formulário de card:', cardForm);
-    
+
     // Verificar se os elementos foram encontrados
     if (!newCardBtn) console.error('ERRO: Botão new-card-btn não encontrado no DOM');
     if (!cardModal) console.error('ERRO: Elemento card-modal não encontrado no DOM');
     if (!confirmModal) console.error('ERRO: Elemento confirm-modal não encontrado no DOM');
     if (!cardForm) console.error('ERRO: Elemento card-form não encontrado no DOM');
-    
+
     // Filtros e busca
     searchInput = document.querySelector('.search-input');
     deckFilter = document.getElementById('deck-filter');
     difficultyFilter = document.getElementById('difficulty-filter');
-    
+
     // Containers
     cardsContainer = document.querySelector('.cards-container');
-    
+
     // Configurar botão de tema
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
         themeToggle.addEventListener('click', toggleTheme);
     }
-    
+
     // Configurar botão de logout
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
@@ -102,7 +102,7 @@ function setupUIElements() {
             logout();
         });
     }
-    
+
     // Configurar navegação
     setupNavigation();
 }
@@ -115,40 +115,40 @@ function setupEventListeners() {
     // Novo card
     if (newCardBtn) {
         console.log('Botão novo card encontrado, adicionando listener...');
-        newCardBtn.addEventListener('click', function(e) {
+        newCardBtn.addEventListener('click', function (e) {
             console.log('Botão novo card clicado!');
             openCardModal();
         });
     } else {
         console.error('Botão novo card não encontrado no DOM!');
     }
-    
+
     // Busca
     if (searchInput) {
         searchInput.addEventListener('input', filterCards);
     }
-    
+
     // Filtros
     if (deckFilter) {
         deckFilter.addEventListener('change', filterCards);
     }
-    
+
     if (difficultyFilter) {
         difficultyFilter.addEventListener('change', filterCards);
     }
-    
+
     // Modal de confirmação
     const cancelDeleteBtn = document.querySelector('.cancel-delete');
     const confirmDeleteBtn = document.querySelector('.confirm-delete');
-    
+
     if (cancelDeleteBtn) {
         cancelDeleteBtn.addEventListener('click', () => closeModal(confirmModal));
     }
-    
+
     if (confirmDeleteBtn) {
         confirmDeleteBtn.addEventListener('click', confirmDeleteCard);
     }
-    
+
     // Fechar modais ao clicar fora
     const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => {
@@ -156,19 +156,19 @@ function setupEventListeners() {
         if (overlay) {
             overlay.addEventListener('click', () => closeModal(modal));
         }
-        
+
         const closeBtn = modal.querySelector('.modal-close');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => closeModal(modal));
         }
     });
-    
+
     // Cancelar edição
     const cancelBtn = document.querySelector('.cancel-modal');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => closeModal(cardModal));
     }
-    
+
     // Salvar card
     const saveBtn = document.querySelector('.save-card');
     if (saveBtn) {
@@ -181,15 +181,15 @@ function setupEventListeners() {
  */
 function setupNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
-    
+
     navItems.forEach(item => {
         item.addEventListener('click', function () {
             const page = this.getAttribute('data-page');
-            
+
             // Atualizar estado ativo
             navItems.forEach(nav => nav.classList.remove('active'));
             this.classList.add('active');
-            
+
             // Navegar para a página correta
             if (page === 'dashboard') {
                 window.location.href = 'dashboard.html';
@@ -213,17 +213,17 @@ function setupNavigation() {
 function updateUserInfo(user) {
     const userNameElements = document.querySelectorAll('.user-name-display');
     const userInitial = document.querySelector('.user-initial');
-    
+
     if (user && user.name) {
         userNameElements.forEach(element => {
             element.textContent = user.name;
         });
-        
+
         if (userInitial) {
             userInitial.textContent = user.name.charAt(0).toUpperCase();
         }
     }
-    
+
     // Atualizar data atual
     updateCurrentDate();
 }
@@ -235,11 +235,11 @@ function updateCurrentDate() {
     const dateDisplay = document.querySelector('.date-display');
     if (dateDisplay) {
         const now = new Date();
-        const options = { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+        const options = {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         };
         dateDisplay.textContent = now.toLocaleDateString('pt-BR', options);
     }
@@ -253,13 +253,13 @@ async function loadInitialData() {
         // Carregar decks
         const decksResponse = await api.get('/api/decks');
         decks = decksResponse.data || [];
-        
+
         // Preencher select de decks
         populateDeckSelects();
-        
+
         // Carregar cards
         await loadCards();
-        
+
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error);
         showNotification('Erro ao carregar os dados. Tente novamente mais tarde.', 'error');
@@ -274,15 +274,15 @@ function populateDeckSelects() {
         document.getElementById('deck-filter'),
         document.getElementById('card-deck')
     ];
-    
+
     deckSelects.forEach(select => {
         if (!select) return;
-        
+
         // Limpar opções existentes (exceto a primeira)
         while (select.options.length > 1) {
             select.remove(1);
         }
-        
+
         // Adicionar opções de decks
         decks.forEach(deck => {
             const option = document.createElement('option');
@@ -312,12 +312,12 @@ async function loadCards() {
  */
 function renderCards(filteredCards = null) {
     const cardsToRender = filteredCards || cards;
-    
+
     if (!cardsContainer) return;
-    
+
     // Limpar container
     cardsContainer.innerHTML = '';
-    
+
     if (cardsToRender.length === 0) {
         // Mostrar estado vazio
         const emptyState = document.createElement('div');
@@ -330,7 +330,7 @@ function renderCards(filteredCards = null) {
         cardsContainer.appendChild(emptyState);
         return;
     }
-    
+
     // Renderizar cards
     cardsToRender.forEach(card => {
         const deck = decks.find(d => d.id === card.deckId) || {};
@@ -348,7 +348,7 @@ function renderCards(filteredCards = null) {
 function createCardElement(card, deck) {
     const cardElement = document.createElement('div');
     cardElement.className = 'card-item';
-    
+
     // Formatar data
     const createdAt = new Date(card.createdAt);
     const formattedDate = createdAt.toLocaleDateString('pt-BR', {
@@ -356,7 +356,7 @@ function createCardElement(card, deck) {
         month: 'short',
         year: 'numeric'
     });
-    
+
     // Criar elemento do card
     cardElement.innerHTML = `
         <div class="card-header">
@@ -384,19 +384,19 @@ function createCardElement(card, deck) {
             </div>
         </div>
     `;
-    
+
     // Adicionar eventos aos botões
     const editBtn = cardElement.querySelector('.edit-card');
     const deleteBtn = cardElement.querySelector('.delete-card');
-    
+
     if (editBtn) {
         editBtn.addEventListener('click', () => editCard(card.id));
     }
-    
+
     if (deleteBtn) {
         deleteBtn.addEventListener('click', () => confirmDelete(card.id));
     }
-    
+
     return cardElement;
 }
 
@@ -420,22 +420,22 @@ function filterCards() {
     const searchTerm = (searchInput?.value || '').toLowerCase();
     const selectedDeckId = deckFilter?.value || '';
     const selectedDifficulty = difficultyFilter?.value || '';
-    
+
     const filtered = cards.filter(card => {
         // Filtrar por termo de busca
-        const matchesSearch = !searchTerm || 
+        const matchesSearch = !searchTerm ||
             (card.question && card.question.toLowerCase().includes(searchTerm)) ||
             (card.answer && card.answer.toLowerCase().includes(searchTerm));
-        
+
         // Filtrar por deck
         const matchesDeck = !selectedDeckId || card.deckId === selectedDeckId;
-        
+
         // Filtrar por dificuldade
         const matchesDifficulty = !selectedDifficulty || card.difficulty === selectedDifficulty;
-        
+
         return matchesSearch && matchesDeck && matchesDifficulty;
     });
-    
+
     renderCards(filtered);
 }
 
@@ -448,12 +448,12 @@ function openCardModal(cardId = null) {
     currentCardId = cardId;
     const modalTitle = document.querySelector('#card-modal .modal-title');
     console.log('Modal title element:', modalTitle);
-    
+
     if (cardId) {
         // Modo edição
         modalTitle.textContent = 'Editar Card';
         const card = cards.find(c => c.id === cardId);
-        
+
         if (card) {
             document.getElementById('card-question').value = card.question || '';
             document.getElementById('card-answer').value = card.answer || '';
@@ -465,7 +465,7 @@ function openCardModal(cardId = null) {
         modalTitle.textContent = 'Novo Card';
         cardForm?.reset();
     }
-    
+
     openModal(cardModal);
 }
 
@@ -474,25 +474,25 @@ function openCardModal(cardId = null) {
  */
 async function saveCard() {
     if (!cardForm) return;
-    
+
     // Validar formulário
     const question = document.getElementById('card-question')?.value.trim();
     const answer = document.getElementById('card-answer')?.value.trim();
     const deckId = document.getElementById('card-deck')?.value;
     const difficulty = document.getElementById('card-difficulty')?.value;
-    
+
     if (!question || !answer || !deckId) {
         showNotification('Preencha todos os campos obrigatórios.', 'error');
         return;
     }
-    
+
     const cardData = {
         question,
         answer,
         deckId,
         difficulty: difficulty || 'medio'
     };
-    
+
     try {
         if (currentCardId) {
             // Atualizar card existente
@@ -503,11 +503,11 @@ async function saveCard() {
             await api.post('/api/cards', cardData);
             showNotification('Card criado com sucesso!', 'success');
         }
-        
+
         // Recarregar cards e fechar modal
         await loadCards();
         closeModal(cardModal);
-        
+
     } catch (error) {
         console.error('Erro ao salvar card:', error);
         showNotification('Erro ao salvar o card. Tente novamente.', 'error');
@@ -539,7 +539,7 @@ async function confirmDeleteCard() {
         closeModal(confirmModal);
         return;
     }
-    
+
     try {
         await api.delete(`/api/cards/${currentCardId}`);
         showNotification('Card excluído com sucesso!', 'success');
@@ -561,10 +561,10 @@ function openModal(modal) {
         console.error('Nenhum modal fornecido para a função openModal');
         return;
     }
-    
+
     document.body.style.overflow = 'hidden';
     modal.classList.add('active');
-    
+
     // Focar no primeiro campo de entrada, se houver
     const input = modal.querySelector('input, textarea, select');
     if (input) {
@@ -578,10 +578,10 @@ function openModal(modal) {
  */
 function closeModal(modal) {
     if (!modal) return;
-    
+
     document.body.style.overflow = '';
     modal.classList.remove('active');
-    
+
     // Limpar ID do card atual se for o modal de confirmação
     if (modal.id === 'confirm-modal') {
         currentCardId = null;
@@ -589,7 +589,7 @@ function closeModal(modal) {
 }
 
 // Adicionar suporte para tecla Esc fechar os modais
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
         const activeModal = document.querySelector('.modal.active');
         if (activeModal) {
