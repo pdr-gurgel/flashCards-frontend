@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         return; // Redireciona para o login se não estiver autenticado
     }
 
-    // Inicializar o tema
+    // Inicializar o temacd
     initTheme();
 
     // Obter informações do usuário atual

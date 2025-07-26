@@ -11,12 +11,11 @@ import axios from 'axios';
 
 const API_BASE_URL = 'https://flashcards-backend-ejyn.onrender.com';
 
-// Configuração do Axios para incluir o token de autenticação
+// Configuração do Axios (sem interceptors problemáticos)
 const api = axios.create({
     baseURL: API_BASE_URL,
     headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`
+        'Content-Type': 'application/json'
     }
 });
 
@@ -251,7 +250,12 @@ function updateCurrentDate() {
 async function loadInitialData() {
     try {
         // Carregar decks
-        const decksResponse = await api.get('/api/decks');
+        const token = getToken();
+        const decksResponse = await axios.get(`${API_BASE_URL}/api/decks`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
         decks = decksResponse.data || [];
 
         // Preencher select de decks
@@ -298,7 +302,12 @@ function populateDeckSelects() {
  */
 async function loadCards() {
     try {
-        const response = await api.get('/api/cards');
+        const token = getToken();
+        const response = await axios.get(`${API_BASE_URL}/api/cards`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
         cards = response.data || [];
         renderCards();
     } catch (error) {
