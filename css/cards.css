@@ -1,3 +1,37 @@
+/* Botões e Dicas de Ferramenta */
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--primary-color-disabled);
+}
+
+.tooltip {
+    position: relative;
+}
+
+.tooltip::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    z-index: 1000;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* Modal Styles */
 .modal {
     position: fixed;
@@ -572,6 +606,159 @@
 }
 
 /* Container dos Cards */
+
+.flashcard-modern {
+    background: var(--card-bg, #fff);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 240px;
+    max-width: 340px;
+    min-height: 180px;
+    transition: box-shadow 0.2s, transform 0.2s;
+    border: 1.5px solid var(--card-border, #ececec);
+    overflow: hidden;
+}
+.flashcard-modern:hover {
+    box-shadow: 0 8px 32px rgba(80, 100, 255, 0.13);
+    transform: translateY(-2px) scale(1.012);
+    border-color: var(--color-primary, #4f64ff);
+}
+
+.card-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px 6px 18px;
+    background: var(--card-header-bg, #f8f9fe);
+    border-bottom: 1px solid var(--card-border, #ececec);
+}
+.deck-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-primary, #4f64ff);
+}
+.deck-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.deck-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-primary, #4f64ff);
+}
+.card-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.card-content-modern {
+    padding: 16px 18px 10px 18px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.card-question-modern {
+    font-weight: 600;
+    font-size: 1.08rem;
+    color: var(--text-primary, #2a2a2a);
+    margin-bottom: 4px;
+    word-break: break-word;
+}
+.card-answer-modern {
+    color: #23272f;
+    font-size: 0.97rem;
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 2px;
+    border-left: 3px solid var(--color-primary, #4f64ff);
+    border: 1.5px solid #e0e3ea;
+    word-break: break-word;
+    font-weight: 500;
+}
+.card-footer-modern {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 10px 18px 14px 18px;
+    border-top: 1px solid var(--card-border, #ececec);
+    background: var(--card-header-bg, #f8f9fe);
+    min-height: 38px;
+    gap: 10px;
+}
+.card-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: 0.84rem;
+    color: #7a7a8c;
+    font-weight: 500;
+    line-height: 1.2;
+}
+.card-stats span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.card-stats i {
+    margin-right: 3px;
+    font-size: 0.95em;
+    opacity: 0.7;
+}
+@media (max-width: 600px) {
+    .card-footer-modern {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+        padding: 10px 8px 12px 8px;
+    }
+    .card-stats {
+        flex-direction: row;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+    .card-difficulty {
+        align-self: flex-end;
+        margin-left: auto;
+        margin-top: 2px;
+    }
+}
+.card-difficulty {
+    padding: 5px 16px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #e8eafc;
+    color: var(--color-primary, #4f64ff);
+    border: none;
+}
+.difficulty-1 { background: #ebfaef; color: #36b37e; }
+.difficulty-2 { background: #fff6e5; color: #ff9800; }
+.difficulty-3 { background: #ffeaea; color: #ff4e6a; }
+
+@media (max-width: 900px) {
+    .flashcard-modern { min-width: 180px; max-width: 100%; }
+}
+@media (max-width: 600px) {
+    .flashcard-modern { min-width: 140px; max-width: 100vw; }
+}
+
 .cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
