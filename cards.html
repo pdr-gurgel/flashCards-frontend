@@ -66,27 +66,36 @@
             <div class="cards-subheader">
                 <h2 class="subheader-title">Gerencie seus cards de estudo</h2>
                 <div class="subheader-actions">
-                    <div class="search-container">
-                        <input type="text" class="search-input" placeholder="Buscar cards..." aria-label="Buscar cards">
-                    </div>
-                    <div class="filter-container">
-                        <select class="filter-select" id="deck-filter">
-                            <option value="">Todos os Decks</option>
-                            <!-- Os decks serão preenchidos via JavaScript -->
-                        </select>
-                    </div>
-                    <div class="filter-container">
-                        <select class="filter-select" id="difficulty-filter">
-                            <option value="">Todas as Dificuldades</option>
-                            <option value="facil">Fácil</option>
-                            <option value="medio">Médio</option>
-                            <option value="dificil">Difícil</option>
-                        </select>
-                    </div>
-                    <button class="btn-primary" id="new-card-btn">
-                        <i class="fas fa-plus"></i> Novo Card
-                    </button>
-                </div>
+    <div class="search-container">
+        <input type="text" class="search-input" placeholder="Buscar cards..." aria-label="Buscar cards">
+    </div>
+    <div class="filter-container">
+        <select class="filter-select" id="deck-filter">
+            <option value="">Todos os Decks</option>
+            <!-- Os decks serão preenchidos via JavaScript -->
+        </select>
+    </div>
+    <div class="filter-container">
+        <select class="filter-select" id="difficulty-filter">
+            <option value="">Todas as Dificuldades</option>
+            <option value="1">Fácil</option>
+            <option value="2">Médio</option>
+            <option value="3">Difícil</option>
+        </select>
+    </div>
+    <div class="filter-container">
+        <select class="filter-select" id="sort-select">
+            <option value="default">Ordenar por: Padrão</option>
+            <option value="difficulty-asc">Dificuldade (Fácil → Difícil)</option>
+            <option value="difficulty-desc">Dificuldade (Difícil → Fácil)</option>
+            <option value="az">A-Z</option>
+            <option value="za">Z-A</option>
+        </select>
+    </div>
+    <button class="btn-primary" id="new-card-btn">
+        <i class="fas fa-plus"></i> Novo Card
+    </button>
+</div>
             </div>
 
             <!-- Container dos Cards -->
@@ -113,25 +122,25 @@
                 <form id="card-form">
                     <div class="form-group">
                         <label for="card-question">Pergunta</label>
-                        <textarea id="card-question" rows="3" required></textarea>
+                        <textarea id="card-question" name="question" rows="3" required></textarea>
                     </div>
                     <div class="form-group">
                         <label for="card-answer">Resposta</label>
-                        <textarea id="card-answer" rows="3" required></textarea>
+                        <textarea id="card-answer" name="response" rows="3" required></textarea>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="card-deck">Deck</label>
-                            <select id="card-deck" required>
+                            <select id="card-deck" name="deck_id" required>
                                 <!-- Os decks serão preenchidos via JavaScript -->
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="card-difficulty">Dificuldade</label>
-                            <select id="card-difficulty" required>
-                                <option value="facil">Fácil</option>
-                                <option value="medio" selected>Médio</option>
-                                <option value="dificil">Difícil</option>
+                            <select id="card-difficulty" name="difficulty" required>
+                                <option value="1">Fácil</option>
+                                <option value="2" selected>Médio</option>
+                                <option value="3">Difícil</option>
                             </select>
                         </div>
                     </div>
@@ -139,8 +148,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn-secondary cancel-modal">Cancelar</button>
-                <button class="btn-primary save-card">Salvar Card</button>
+                <button type="button" class="btn-secondary cancel-modal">Cancelar</button>
+                <button type="submit" form="card-form" class="btn-primary">Salvar Card</button>
             </div>
         </div>
     </div>
