@@ -569,7 +569,8 @@ async function openCardModal(cardId) {
     if (cardId) {
         // Modo edição
         modalTitle.textContent = 'Editar Card';
-
+        document.getElementById('card-id').value = cardId;
+        document.getElementById('card-id').value = cardId; // Preenche campo hidden
         try {
             const response = await api.get(`/cards/${cardId}`);
             const card = response.data;
@@ -594,12 +595,14 @@ async function openCardModal(cardId) {
         modalTitle.textContent = 'Novo Card';
         if (cardForm) {
             cardForm.reset();
+            document.getElementById('card-id').value = '';
+
+            document.getElementById('card-id').value = ''; // Limpa campo hidden
             // Define um valor padrão para dificuldade
             const difficultySelect = document.getElementById('card-difficulty');
             if (difficultySelect) difficultySelect.value = '1';
         }
     }
-
     openModal(cardModal);
 }
 
@@ -607,62 +610,40 @@ async function openCardModal(cardId) {
  * Salva um novo card ou atualiza um existente
  */
 async function saveCard() {
-    console.log('saveCard function called');
     const form = document.getElementById('card-form');
     if (!form) {
         console.error('Form not found');
         return;
     }
-
-    // Get the save button and store its original state
+    const cardId = document.getElementById('card-id').value;
+    console.log('saveCard function called');
     const saveButton = form.querySelector('button[type="submit"]');
     let originalButtonText = '';
     if (saveButton) {
         originalButtonText = saveButton.innerHTML;
         saveButton.disabled = true;
-        saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
+        saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
     }
-
-    const formData = new FormData(form);
-    console.log('Form data:', {
-        deck_id: formData.get('deck_id'),
-        question: formData.get('question'),
-        response: formData.get('response'),
-        difficulty: formData.get('difficulty')
-    });
-
     const cardData = {
-        deck_id: formData.get('deck_id'),
-        question: formData.get('question')?.trim(),
-        response: formData.get('response')?.trim(),
-        difficulty: parseInt(formData.get('difficulty')) || 1
+        question: form.elements['question'].value,
+        response: form.elements['response'].value,
+        deck_id: form.elements['deck_id'].value,
+        difficulty: form.elements['difficulty'].value,
+        question: form.elements['question'].value,
+        response: form.elements['response'].value,
+        deck_id: form.elements['deck_id'].value,
+        difficulty: form.elements['difficulty'].value,
     };
-
-    // Validação básica
-    if (!cardData.question || !cardData.response || !cardData.deck_id) {
-        const errorMsg = `Missing required fields: ${!cardData.question ? 'question ' : ''}${!cardData.response ? 'response ' : ''}${!cardData.deck_id ? 'deck_id' : ''}`;
-        console.error('Validation error:', errorMsg);
-        showNotification('Por favor, preencha todos os campos obrigatórios.', 'error');
-
-        // Restore button state on validation error
-        if (saveButton) {
-            saveButton.disabled = false;
-            saveButton.innerHTML = originalButtonText;
-        }
-        return;
-    }
-
     try {
-        // Se tivermos um cardId, estamos atualizando, senão, criando um novo
-        if (currentCardId) {
-            await api.put(`/cards/${currentCardId}`, cardData);
+        if (cardId) {
+            // Edição: atualizar card existente
+            await api.put(`/cards/${cardId}`, cardData);
             showNotification('Card atualizado com sucesso!', 'success');
         } else {
-            await api.post(`/decks/${cardData.deck_id}/cards`, cardData);
+            // Criação: novo card
+            await api.post('/cards', cardData);
             showNotification('Card criado com sucesso!', 'success');
         }
-
-        // Fechar o modal e recarregar a lista de cards
         closeModal(cardModal);
         loadCards();
     } catch (error) {
@@ -670,7 +651,6 @@ async function saveCard() {
         const errorMessage = error.response?.data?.error || 'Erro ao salvar o card. Tente novamente.';
         showNotification(errorMessage, 'error');
     } finally {
-        // Restaurar o botão de salvar
         if (saveButton && originalButtonText) {
             saveButton.disabled = false;
             saveButton.innerHTML = originalButtonText;
