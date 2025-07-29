@@ -212,6 +212,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
             });
             decks = response.data;
+            // Buscar contagem de cards para cada deck
+            await Promise.all(decks.map(async (deck) => {
+                try {
+                    const countResp = await axios.get(`${API_BASE_URL}/decks/${deck.id}/cards/count`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    deck.cardsCount = countResp.data.count;
+                } catch (err) {
+                    deck.cardsCount = 0;
+                }
+            }));
             renderAllDecks();
         } catch (error) {
             console.error('Erro ao buscar decks:', error);
