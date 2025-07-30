@@ -3,13 +3,60 @@ import '../css/main.css';
 import '../css/dashboard.css';
 
 // Importando funções de autenticação
-import { protectRoute, getCurrentUser, logout } from './auth.js';
+import { protectRoute, getCurrentUser, logout, getToken } from './auth.js';
 
 // Importando funções de tema
 import { initTheme, toggleTheme } from './theme.js';
 
+// Importando axios para requisições HTTP
+import axios from 'axios';
+
+// Configuração do Axios
+const API_BASE_URL = 'https://flashcards-backend-ejyn.onrender.com';
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+    }
+});
+
+// Interceptor para adicionar o token JWT em cada requisição
+api.interceptors.request.use(
+    (config) => {
+        const token = getToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// Função para buscar o total de flashcards do usuário
+async function fetchTotalFlashcards() {
+    try {
+        const response = await api.get('/cards/count');
+        return response.data.count || 0;
+    } catch (error) {
+        console.error('Erro ao buscar total de flashcards:', error);
+        return 0; // Retorna 0 em caso de erro para não quebrar a interface
+    }
+}
+
+// Função para atualizar o contador de flashcards no dashboard
+async function updateFlashcardsCount() {
+    const totalFlashcards = await fetchTotalFlashcards();
+    const totalElement = document.querySelector('.card-flashcards .stat:first-child .stat-value');
+    if (totalElement) {
+        totalElement.textContent = totalFlashcards;
+    }
+}
+
 // Dashboard functionality
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     // Verificar se o usuário está autenticado
     if (!protectRoute()) {
         return; // Se não estiver autenticado, protectRoute já redireciona
@@ -17,6 +64,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Inicializar o tema
     initTheme();
+
+    // Atualizar a contagem de flashcards
+    await updateFlashcardsCount();
+
     // Get current user info using auth module
     const currentUser = getCurrentUser() || {};
 
