@@ -641,7 +641,7 @@ async function saveCard() {
             showNotification('Card atualizado com sucesso!', 'success');
         } else {
             // Criação: novo card
-            await api.post('/cards', cardData);
+            await api.post(`/decks/${cardData.deck_id}/cards`, cardData);
             showNotification('Card criado com sucesso!', 'success');
         }
         closeModal(cardModal);
