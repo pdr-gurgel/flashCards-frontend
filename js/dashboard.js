@@ -46,12 +46,32 @@ async function fetchTotalFlashcards() {
     }
 }
 
+// Função para buscar o total de decks do usuário
+async function fetchTotalDecks() {
+    try {
+        const response = await api.get('/decks/count');
+        return response.data.count || 0;
+    } catch (error) {
+        console.error('Erro ao buscar total de decks:', error);
+        return 0; // Retorna 0 em caso de erro para não quebrar a interface
+    }
+}
+
 // Função para atualizar o contador de flashcards no dashboard
 async function updateFlashcardsCount() {
     const totalFlashcards = await fetchTotalFlashcards();
     const totalElement = document.querySelector('.card-flashcards .stat:first-child .stat-value');
     if (totalElement) {
         totalElement.textContent = totalFlashcards;
+    }
+}
+
+// Função para atualizar o contador de decks no dashboard
+async function updateDecksCount() {
+    const totalDecks = await fetchTotalDecks();
+    const decksCountElement = document.querySelector('.card-decks .stat:first-child .stat-value');
+    if (decksCountElement) {
+        decksCountElement.textContent = totalDecks;
     }
 }
 
@@ -65,8 +85,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Inicializar o tema
     initTheme();
 
-    // Atualizar a contagem de flashcards
-    await updateFlashcardsCount();
+    // Atualizar as contagens
+    await Promise.all([
+        updateFlashcardsCount(),
+        updateDecksCount()
+    ]);
 
     // Get current user info using auth module
     const currentUser = getCurrentUser() || {};
