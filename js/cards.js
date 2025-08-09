@@ -9,7 +9,7 @@ import { protectRoute, getCurrentUser, logout, getToken } from './auth.js';
 import { showNotification } from './notifications.js';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://flashcards-backend-ejyn.onrender.com';
+const API_BASE_URL = 'http://localhost:3001';
 
 // Configuração do Axios com interceptor para adicionar o token JWT
 const api = axios.create({
@@ -221,7 +221,306 @@ function setupEventListeners() {
             await saveCard();
         });
     }
+
+    // Configurar botão de geração com IA
+    const generateAIBtn = document.getElementById('generate-ai-btn');
+    const aiModal = document.getElementById('ai-modal');
+
+    if (generateAIBtn && aiModal) {
+        // Elementos do formulário
+        const aiForm = document.getElementById('ai-generate-form');
+        const aiTema = document.getElementById('ai-tema');
+        const aiQuantidade = document.getElementById('ai-quantidade');
+        const aiDificuldade = document.getElementById('ai-dificuldade');
+        const aiPrompt = document.getElementById('ai-prompt');
+        const aiJson = document.getElementById('ai-json');
+        const copyPromptBtn = document.getElementById('copy-prompt');
+        const importJsonBtn = document.getElementById('import-json-btn');
+        const nextToImportBtn = document.getElementById('next-to-import');
+        const backToPromptBtn = document.getElementById('back-to-prompt');
+        const aiDeckSelect = document.getElementById('ai-deck-select');
+
+        // Elementos das abas
+        const aiTabs = document.querySelectorAll('.ai-tab');
+        const aiTabPanes = document.querySelectorAll('.ai-tab-pane');
+
+        // Função para alternar entre abas
+        const switchTab = (tabId) => {
+            // Atualizar abas
+            aiTabs.forEach(tab => {
+                if (tab.dataset.tab === tabId) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            // Atualizar painéis
+            aiTabPanes.forEach(pane => {
+                if (pane.id === `tab-${tabId}`) {
+                    pane.classList.add('active');
+                } else {
+                    pane.classList.remove('active');
+                }
+            });
+
+            // Rolar para o topo do painel
+            const activePane = document.querySelector(`#tab-${tabId}`);
+            if (activePane) {
+                activePane.scrollTo(0, 0);
+            }
+        };
+
+        // Configurar eventos das abas
+        aiTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                if (tabId) {
+                    switchTab(tabId);
+                }
+            });
+        });
+
+        // Configurar botões de navegação
+        if (nextToImportBtn) {
+            nextToImportBtn.addEventListener('click', () => {
+                // Validar se o tema foi preenchido
+                if (!aiTema.value.trim()) {
+                    showNotification('Por favor, informe o tema dos flashcards', 'error');
+                    aiTema.focus();
+                    return;
+                }
+
+                // Gerar prompt antes de mudar de aba
+                generatePrompt();
+
+                // Mudar para a aba de importação
+                switchTab('importar');
+
+                // Rolar para o topo e focar no campo de JSON
+                setTimeout(() => {
+                    const container = document.querySelector('.ai-tab-pane.active');
+                    if (container) container.scrollTop = 0;
+                    if (aiJson) aiJson.focus();
+                }, 10);
+            });
+        }
+
+        if (backToPromptBtn) {
+            backToPromptBtn.addEventListener('click', () => {
+                switchTab('gerar');
+            });
+        }
+
+        // Função para gerar o prompt
+        const generatePrompt = () => {
+            const tema = aiTema.value.trim();
+            const quantidade = aiQuantidade.value;
+            const dificuldade = aiDificuldade.value;
+
+            if (!tema) return;
+
+            const promptText = `Atue como um professor experiente e especialista no tema "${tema}", com habilidade para criar materiais de estudo claros e didáticos.
+Sua tarefa é criar ${quantidade} flashcards sobre "${tema}" com nível de dificuldade ${dificuldade}.
+Instruções importantes:
+- Seja preciso e objetivo, garantindo que cada pergunta seja clara e cada resposta correta.
+- Adapte a complexidade das perguntas conforme o nível de dificuldade solicitado.
+- Use exemplos e contextualizações sempre que possível, para facilitar a memorização.
+- Mantenha a linguagem coerente com o público-alvo (ensino médio, vestibular, ou universitário).
+- Garanta que o conteúdo seja cientificamente correto e atualizado.
+
+Por favor, retorne APENAS um array JSON válido, onde cada item é um objeto com as seguintes propriedades:
+- question: A pergunta do flashcard
+- response: A resposta do flashcard
+- difficulty: Nível de dificuldade (1 a 3, sendo 1 fácil e 3 difícil)
+
+Exemplo de formato esperado:
+[
+  {
+    "question": "Pergunta exemplo 1?",
+    "response": "Resposta exemplo 1.",
+    "difficulty": 1
+  },
+  {
+    "question": "Pergunta exemplo 2?",
+    "response": "Resposta exemplo 2.",
+    "difficulty": 2
+  }
+]
+Retorne apenas o array JSON.  
+`;
+
+            aiPrompt.value = promptText;
+            return promptText;
+        };
+
+        // Atualizar prompt quando os campos mudarem
+        [aiTema, aiQuantidade, aiDificuldade].forEach(input => {
+            input.addEventListener('input', generatePrompt);
+            input.addEventListener('change', generatePrompt);
+        });
+
+        // Copiar prompt para área de transferência
+        if (copyPromptBtn) {
+            copyPromptBtn.addEventListener('click', () => {
+                aiPrompt.select();
+                document.execCommand('copy');
+
+                // Feedback visual
+                const originalText = copyPromptBtn.innerHTML;
+                copyPromptBtn.innerHTML = '<i class="fas fa-check"></i>';
+                copyPromptBtn.disabled = true;
+
+                setTimeout(() => {
+                    copyPromptBtn.innerHTML = originalText;
+                    copyPromptBtn.disabled = false;
+                }, 2000);
+            });
+        }
+
+        // Validar JSON ao digitar
+        const validateJson = (jsonString) => {
+            try {
+                const json = JSON.parse(jsonString);
+                if (!Array.isArray(json) || json.length === 0) {
+                    throw new Error('O JSON deve ser um array não vazio');
+                }
+
+                // Validar estrutura de cada card
+                const validJson = json.every((card, index) => {
+                    if (!card.question || !card.response) {
+                        throw new Error(`Card na posição ${index + 1} está incompleto. É necessário ter 'question' e 'response'`);
+                    }
+                    return true;
+                });
+
+                return { isValid: true, data: json };
+            } catch (e) {
+                return { isValid: false, error: e.message };
+            }
+        };
+
+        // Atualizar validação em tempo real
+        if (aiJson) {
+            aiJson.addEventListener('input', () => {
+                const { isValid, error } = validateJson(aiJson.value);
+
+                if (isValid) {
+                    importJsonBtn.disabled = false;
+                    aiJson.classList.remove('error');
+
+                    // Atualizar contagem de cards
+                    const cardCount = JSON.parse(aiJson.value).length;
+                    importJsonBtn.textContent = `Importar ${cardCount} Card${cardCount !== 1 ? 's' : ''}`;
+                } else {
+                    importJsonBtn.disabled = true;
+                    aiJson.classList.add('error');
+                    console.error('Erro de validação:', error);
+                }
+            });
+        }
+
+        // Importar cards do JSON
+        if (importJsonBtn) {
+            importJsonBtn.addEventListener('click', async () => {
+                try {
+                    const deckId = document.getElementById('deck-filter').value;
+
+                    if (!deckId) {
+                        showNotification('Selecione um deck antes de importar', 'error');
+                        return;
+                    }
+
+                    const { isValid, data: cards, error } = validateJson(aiJson.value);
+
+                    if (!isValid) {
+                        showNotification(`Erro de validação: ${error}`, 'error');
+                        return;
+                    }
+
+                    // Mostrar loading
+                    importJsonBtn.disabled = true;
+                    importJsonBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importando...';
+
+                    try {
+                        // Enviar para o backend
+                        const response = await fetch(`/api/decks/${deckId}/cards/import`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify({ cards })
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.message || 'Erro ao importar cards');
+                        }
+
+                        const result = await response.json();
+
+                        // Feedback de sucesso
+                        showNotification(`${cards.length} cards importados com sucesso!`, 'success');
+
+                        // Fechar o modal e recarregar os cards
+                        closeModal(aiModal);
+                        loadCards();
+
+                    } catch (error) {
+                        console.error('Erro ao importar cards:', error);
+                        showNotification(`Erro ao importar cards: ${error.message}`, 'error');
+                    } finally {
+                        // Restaurar estado do botão
+                        importJsonBtn.disabled = false;
+                        importJsonBtn.textContent = 'Importar Cards';
+                    }
+
+                } catch (e) {
+                    console.error('Erro ao processar importação:', e);
+                    showNotification(`Erro: ${e.message}`, 'error');
+                }
+            });
+        }
+
+        // Abrir modal ao clicar no botão
+        generateAIBtn.addEventListener('click', () => {
+            // Limpar campos ao abrir o modal
+            if (aiForm) aiForm.reset();
+            if (aiJson) aiJson.value = '';
+            if (aiPrompt) aiPrompt.value = '';
+            importJsonBtn.disabled = true;
+
+            // Abrir o modal
+            openModal(aiModal);
+
+            // Mudar para a aba de importação como padrão
+            switchTab('importar');
+
+            // Pré-selecionar o deck atual no modal de IA, se aplicável
+            const currentDeckId = new URLSearchParams(window.location.search).get('id');
+            if (currentDeckId && aiDeckSelect) {
+                aiDeckSelect.value = currentDeckId;
+            }
+
+            // Focar no campo de JSON após um pequeno delay para garantir a renderização
+            setTimeout(() => {
+                if (aiJson) {
+                    aiJson.focus();
+                }
+            }, 150);
+        });
+
+        // Fechar modal ao clicar no botão de cancelar
+        const aiModalCancel = aiModal.querySelector('.cancel-modal');
+        if (aiModalCancel) {
+            aiModalCancel.addEventListener('click', () => closeModal(aiModal));
+        }
+    } else {
+        console.error('Botão de geração com IA ou modal não encontrado no DOM!');
+    }
 }
+
 
 /**
  * Configura a navegação entre as páginas
@@ -338,7 +637,8 @@ async function loadInitialData() {
 function populateDeckSelects() {
     const deckSelects = [
         document.getElementById('deck-filter'),
-        document.getElementById('card-deck')
+        document.getElementById('card-deck'),
+        document.getElementById('ai-deck-select') // Adicionado seletor do modal de IA
     ];
 
     console.log('Iniciando populateDeckSelects...');
