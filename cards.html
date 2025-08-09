@@ -64,38 +64,40 @@
 
             <!-- Barra de filtros e ações -->
             <div class="cards-subheader">
-                <h2 class="subheader-title">Gerencie seus cards de estudo</h2>
                 <div class="subheader-actions">
-    <div class="search-container">
-        <input type="text" class="search-input" placeholder="Buscar cards..." aria-label="Buscar cards">
-    </div>
-    <div class="filter-container">
-        <select class="filter-select" id="deck-filter">
-            <option value="">Todos os Decks</option>
-            <!-- Os decks serão preenchidos via JavaScript -->
-        </select>
-    </div>
-    <div class="filter-container">
-        <select class="filter-select" id="difficulty-filter">
-            <option value="">Todas as Dificuldades</option>
-            <option value="1">Fácil</option>
-            <option value="2">Médio</option>
-            <option value="3">Difícil</option>
-        </select>
-    </div>
-    <div class="filter-container">
-        <select class="filter-select" id="sort-select">
-            <option value="default">Ordenar por: Padrão</option>
-            <option value="difficulty-asc">Dificuldade (Fácil → Difícil)</option>
-            <option value="difficulty-desc">Dificuldade (Difícil → Fácil)</option>
-            <option value="az">A-Z</option>
-            <option value="za">Z-A</option>
-        </select>
-    </div>
-    <button class="btn-primary" id="new-card-btn">
-        <i class="fas fa-plus"></i> Novo Card
-    </button>
-</div>
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="Buscar cards..." aria-label="Buscar cards">
+                    </div>
+                    <div class="filter-container">
+                        <select class="filter-select" id="deck-filter">
+                            <option value="">Todos os Decks</option>
+                            <!-- Os decks serão preenchidos via JavaScript -->
+                        </select>
+                    </div>
+                    <div class="filter-container">
+                        <select class="filter-select" id="difficulty-filter">
+                            <option value="">Todas as Dificuldades</option>
+                            <option value="1">Fácil</option>
+                            <option value="2">Médio</option>
+                            <option value="3">Difícil</option>
+                        </select>
+                    </div>
+                    <div class="filter-container">
+                        <select class="filter-select" id="sort-select">
+                            <option value="default">Ordenar por: Padrão</option>
+                            <option value="difficulty-asc">Dificuldade (Fácil → Difícil)</option>
+                            <option value="difficulty-desc">Dificuldade (Difícil → Fácil)</option>
+                            <option value="az">A-Z</option>
+                            <option value="za">Z-A</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" id="new-card-btn">
+                        <i class="fas fa-plus"></i> Novo Card
+                    </button>
+                    <button class="btn-secondary" id="generate-ai-btn" style="margin-left: 10px;">
+                        <i class="fas fa-robot"></i> Gerar com I.A.
+                    </button>
+                </div>
             </div>
 
             <!-- Container dos Cards -->
@@ -120,7 +122,7 @@
             </div>
             <div class="modal-body">
                 <form id="card-form">
-    <input type="hidden" name="card_id" id="card-id">
+                    <input type="hidden" name="card_id" id="card-id">
                     <div class="form-group">
                         <label for="card-question">Pergunta</label>
                         <textarea id="card-question" name="question" rows="3" required></textarea>
@@ -174,6 +176,120 @@
     </div>
 
     <div id="notification-container" class="notification-container"></div>
+
+    <!-- Modal de Geração com IA -->
+    <div class="modal" id="ai-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Gerar Cards com I.A.</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <!-- Navegação por abas -->
+                <div class="ai-tabs">
+                    <button type="button" class="ai-tab active" data-tab="importar">
+                        <i class="fas fa-file-import"></i> Importar JSON
+                    </button>
+                    <button type="button" class="ai-tab" data-tab="gerar">
+                        <i class="fas fa-magic"></i> Gerar Prompt
+                    </button>
+                </div>
+
+                <!-- Conteúdo das abas -->
+                <div class="ai-tab-content">
+                    <!-- Aba 1: Importar JSON -->
+                    <div class="ai-tab-pane active" id="tab-importar">
+                        <div class="ai-instructions">
+                            <h4><i class="fas fa-info-circle"></i> Como usar</h4>
+                            <ol>
+                                <li>Copie o prompt da etapa anterior e use em sua ferramenta de IA preferida</li>
+                                <li>Cole o JSON gerado no campo abaixo</li>
+                                <li>Clique em "Importar Cards" para adicioná-los ao seu deck</li>
+                            </ol>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ai-deck-select">Selecione o Deck</label>
+                            <div class="select-arrow">
+                                <select id="ai-deck-select" class="form-control" required>
+                                    <!-- Options will be populated by JS -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ai-json">Cole o JSON aqui:</label>
+                            <textarea id="ai-json" class="form-control"
+                                placeholder='[{"question": "Pergunta 1", "response": "Resposta 2"}, {"question": "Pergunta 2", "response": "Resposta 2"}]'
+                                rows="8"></textarea>
+                        </div>
+
+
+                    </div>
+
+                    <!-- Aba 2: Gerar Prompt -->
+                    <div class="ai-tab-pane" id="tab-gerar">
+                        <form id="ai-generate-form">
+                            <div class="form-group">
+                                <label for="ai-tema">Tema dos Flashcards</label>
+                                <input type="text" id="ai-tema" class="form-control"
+                                    placeholder="Ex: Programação em JavaScript" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1;">
+                                    <label for="ai-quantidade">Quantidade de Cards</label>
+                                    <div class="select-arrow">
+                                        <select id="ai-quantidade" class="form-control" required>
+                                            <option value="5">5 Cards</option>
+                                            <option value="10" selected>10 Cards</option>
+                                            <option value="15">15 Cards</option>
+                                            <option value="20">20 Cards</option>
+                                            <option value="25">25 Cards</option>
+                                            <option value="30">30 Cards</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="flex: 1;">
+                                    <label for="ai-dificuldade">Dificuldade</label>
+                                    <div class="select-arrow">
+                                        <select id="ai-dificuldade" class="form-control">
+                                            <option value="iniciante">Iniciante</option>
+                                            <option value="intermediario" selected>Intermediário</option>
+                                            <option value="avancado">Avançado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ai-prompt">Prompt Gerado</label>
+                                <div class="prompt-container">
+                                    <textarea id="ai-prompt" class="form-control" readonly></textarea>
+                                    <button type="button" id="copy-prompt" class="btn-icon" title="Copiar prompt">
+                                        <i class="far fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="ai-next-step">
+                                <button type="button" id="next-to-import" class="btn btn-primary">
+                                    Próximo: Importar JSON <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary cancel-modal">Cancelar</button>
+                <button type="button" id="import-json-btn" class="btn-primary" disabled>Importar Cards</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script type="module" src="./js/cards.js"></script>
