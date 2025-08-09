@@ -262,23 +262,26 @@ function renderCalendar(calendarDays, month, year) {
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+
     // Clear calendar
     calendarDays.innerHTML = '';
 
-    // Add day headers
+    // Add day headers first
     const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    dayNames.forEach(day => {
+    dayNames.forEach((day, index) => {
         const dayHeader = document.createElement('div');
         dayHeader.className = 'day-header';
         dayHeader.textContent = day;
+        dayHeader.style.gridColumn = index + 1; // Força posição específica no grid
         calendarDays.appendChild(dayHeader);
     });
 
-    // Add empty days before first day of month
+    // Add empty cells before first day of month
+    // firstDay: 0=Domingo, 1=Segunda, 2=Terça, etc.
     for (let i = 0; i < firstDay; i++) {
         const emptyDay = document.createElement('div');
         emptyDay.className = 'calendar-day empty';
-        emptyDay.innerHTML = '&nbsp;';
+        emptyDay.innerHTML = '';
         calendarDays.appendChild(emptyDay);
     }
 
