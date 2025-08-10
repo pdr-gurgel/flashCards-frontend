@@ -86,6 +86,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Configurar eventos
     setupEventListeners();
 
+
+
     // Carregar dados iniciais
     loadInitialData();
 
@@ -97,25 +99,42 @@ document.addEventListener('DOMContentLoaded', function () {
  * Configura os elementos da interface
  */
 function setupUIElements() {
-    console.log('Configurando elementos da interface...');
     // Botões e controles
     newCardBtn = document.getElementById('new-card-btn');
-    console.log('Botão novo card:', newCardBtn);
-
     cardModal = document.getElementById('card-modal');
-    console.log('Elemento do modal de card:', cardModal);
-
     confirmModal = document.getElementById('confirm-modal');
-    console.log('Elemento do modal de confirmação:', confirmModal);
-
     cardForm = document.getElementById('card-form');
-    console.log('Formulário de card:', cardForm);
 
-    // Verificar se os elementos foram encontrados
-    if (!newCardBtn) console.error('ERRO: Botão new-card-btn não encontrado no DOM');
-    if (!cardModal) console.error('ERRO: Elemento card-modal não encontrado no DOM');
-    if (!confirmModal) console.error('ERRO: Elemento confirm-modal não encontrado no DOM');
-    if (!cardForm) console.error('ERRO: Elemento card-form não encontrado no DOM');
+    // Lógica para controle das abas do modal de IA
+    const aiTabs = document.querySelectorAll('.ai-tab');
+    const aiTabPanes = document.querySelectorAll('.ai-tab-pane');
+    const importJsonBtn = document.getElementById('import-json-btn');
+
+    aiTabs.forEach(tabButton => {
+        tabButton.addEventListener('click', () => {
+            const tabName = tabButton.dataset.tab;
+
+            // Atualiza o estado 'active' dos botões das abas
+            aiTabs.forEach(btn => btn.classList.remove('active'));
+            tabButton.classList.add('active');
+
+            // Atualiza o estado 'active' dos painéis das abas
+            aiTabPanes.forEach(pane => {
+                if (pane.id === `tab-${tabName}`) {
+                    pane.classList.add('active');
+                } else {
+                    pane.classList.remove('active');
+                }
+            });
+
+            // Habilita/desabilita o botão de importação com base na aba ativa
+            if (importJsonBtn) {
+                importJsonBtn.disabled = (tabName !== 'importar');
+            }
+        });
+    });
+
+
 
     // Filtros e busca
     searchInput = document.querySelector('.search-input');
@@ -156,16 +175,11 @@ function setupUIElements() {
  * Configura os event listeners
  */
 function setupEventListeners() {
-    console.log('Configurando event listeners...');
     // Novo card
     if (newCardBtn) {
-        console.log('Botão novo card encontrado, adicionando listener...');
         newCardBtn.addEventListener('click', function (e) {
-            console.log('Botão novo card clicado!');
             openCardModal();
         });
-    } else {
-        console.error('Botão novo card não encontrado no DOM!');
     }
 
     // Busca
@@ -221,7 +235,410 @@ function setupEventListeners() {
             await saveCard();
         });
     }
+
+    // Configurar botão de geração com IA
+    const generateAIBtn = document.getElementById('generate-ai-btn');
+    const aiModal = document.getElementById('ai-modal');
+
+    if (generateAIBtn && aiModal) {
+        // Elementos do formulário
+        const aiForm = document.getElementById('ai-generate-form');
+        const aiTema = document.getElementById('ai-tema');
+        const aiQuantidade = document.getElementById('ai-quantidade');
+        const aiDificuldade = document.getElementById('ai-dificuldade');
+        const aiPrompt = document.getElementById('ai-prompt');
+        const aiJson = document.getElementById('ai-json');
+        const copyPromptBtn = document.getElementById('copy-prompt');
+        const importJsonBtn = document.getElementById('import-json-btn');
+        const nextToImportBtn = document.getElementById('next-to-import');
+        const backToPromptBtn = document.getElementById('back-to-prompt');
+        const aiDeckSelect = document.getElementById('ai-deck-select');
+
+
+
+        // Elementos das abas
+        const aiTabs = document.querySelectorAll('.ai-tab');
+        const aiTabPanes = document.querySelectorAll('.ai-tab-pane');
+
+        // Função para alternar entre abas
+        const switchTab = (tabId) => {
+            // Atualizar abas
+            aiTabs.forEach(tab => {
+                if (tab.dataset.tab === tabId) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            // Atualizar painéis
+            aiTabPanes.forEach(pane => {
+                if (pane.id === `tab-${tabId}`) {
+                    pane.classList.add('active');
+                } else {
+                    pane.classList.remove('active');
+                }
+            });
+
+            // Rolar para o topo do painel
+            const activePane = document.querySelector(`#tab-${tabId}`);
+            if (activePane) {
+                activePane.scrollTo(0, 0);
+            }
+        };
+
+        // Configurar eventos das abas
+        aiTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                if (tabId) {
+                    switchTab(tabId);
+                }
+            });
+        });
+
+        // Configurar botões de navegação
+        if (nextToImportBtn) {
+            nextToImportBtn.addEventListener('click', () => {
+                // Validar se o tema foi preenchido
+                if (!aiTema.value.trim()) {
+                    showNotification('Por favor, informe o tema dos flashcards', 'error');
+                    aiTema.focus();
+                    return;
+                }
+
+                // Gerar prompt antes de mudar de aba
+                generatePrompt();
+
+                // Mudar para a aba de importação
+                switchTab('importar');
+
+                // Rolar para o topo e focar no campo de JSON
+                setTimeout(() => {
+                    const container = document.querySelector('.ai-tab-pane.active');
+                    if (container) container.scrollTop = 0;
+                    if (aiJson) aiJson.focus();
+                }, 10);
+            });
+        }
+
+        if (backToPromptBtn) {
+            backToPromptBtn.addEventListener('click', () => {
+                switchTab('gerar');
+            });
+        }
+
+        // Função para gerar o prompt
+        const generatePrompt = () => {
+            const tema = aiTema.value.trim();
+            const quantidade = aiQuantidade.value;
+            const dificuldade = aiDificuldade.value;
+
+            if (!tema) return;
+
+            const promptText = `Atue como um professor experiente e especialista no tema "${tema}", com habilidade para criar materiais de estudo claros e didáticos.
+Sua tarefa é criar ${quantidade} flashcards sobre "${tema}" com nível de dificuldade ${dificuldade}.
+Instruções importantes:
+- Seja preciso e objetivo, garantindo que cada pergunta seja clara e cada resposta correta.
+- Adapte a complexidade das perguntas conforme o nível de dificuldade solicitado.
+- Use exemplos e contextualizações sempre que possível, para facilitar a memorização.
+- Mantenha a linguagem coerente com o público-alvo (ensino médio, vestibular, ou universitário).
+- Garanta que o conteúdo seja cientificamente correto e atualizado.
+
+Por favor, retorne APENAS um array JSON válido, onde cada item é um objeto com as seguintes propriedades:
+- question: A pergunta do flashcard
+- response: A resposta do flashcard
+- difficulty: Nível de dificuldade (1 a 3, sendo 1 fácil e 3 difícil)
+
+Exemplo de formato esperado:
+[
+  {
+    "question": "Pergunta exemplo 1?",
+    "response": "Resposta exemplo 1.",
+    "difficulty": 1
+  },
+  {
+    "question": "Pergunta exemplo 2?",
+    "response": "Resposta exemplo 2.",
+    "difficulty": 2
+  }
+]
+Retorne apenas o array JSON.  
+`;
+
+            aiPrompt.value = promptText;
+            return promptText;
+        };
+
+        // Atualizar prompt quando os campos mudarem
+        [aiTema, aiQuantidade, aiDificuldade].forEach(input => {
+            input.addEventListener('input', generatePrompt);
+            input.addEventListener('change', generatePrompt);
+        });
+
+        // Copiar prompt para área de transferência
+        if (copyPromptBtn) {
+            copyPromptBtn.addEventListener('click', () => {
+                aiPrompt.select();
+                document.execCommand('copy');
+
+                // Feedback visual
+                const originalText = copyPromptBtn.innerHTML;
+                copyPromptBtn.innerHTML = '<i class="fas fa-check"></i>';
+                copyPromptBtn.disabled = true;
+
+                setTimeout(() => {
+                    copyPromptBtn.innerHTML = originalText;
+                    copyPromptBtn.disabled = false;
+                }, 2000);
+            });
+        }
+
+        // Validar JSON ao digitar
+        const validateJson = (jsonString) => {
+            if (!jsonString.trim()) {
+                return { isValid: false, error: 'Por favor, cole o JSON aqui' };
+            }
+
+            try {
+                const json = JSON.parse(jsonString);
+
+                if (!Array.isArray(json)) {
+                    throw new Error('O JSON deve ser um array');
+                }
+
+                if (json.length === 0) {
+                    throw new Error('O array não pode estar vazio');
+                }
+
+                if (json.length > 100) {
+                    throw new Error('Máximo de 100 cards por importação');
+                }
+
+                // Validar estrutura de cada card
+                for (let i = 0; i < json.length; i++) {
+                    const card = json[i];
+
+                    if (typeof card !== 'object' || card === null) {
+                        throw new Error(`Item ${i + 1} deve ser um objeto`);
+                    }
+
+                    if (!card.question || typeof card.question !== 'string' || !card.question.trim()) {
+                        throw new Error(`Card ${i + 1}: 'question' é obrigatório e deve ser um texto não vazio`);
+                    }
+
+                    if (!card.response || typeof card.response !== 'string' || !card.response.trim()) {
+                        throw new Error(`Card ${i + 1}: 'response' é obrigatório e deve ser um texto não vazio`);
+                    }
+
+                    if (card.question.length > 1000) {
+                        throw new Error(`Card ${i + 1}: 'question' muito longa (máximo 1000 caracteres)`);
+                    }
+
+                    if (card.response.length > 2000) {
+                        throw new Error(`Card ${i + 1}: 'response' muito longa (máximo 2000 caracteres)`);
+                    }
+
+                    // Validar dificuldade se fornecida
+                    if (card.difficulty !== undefined) {
+                        const diff = parseInt(card.difficulty);
+                        if (isNaN(diff) || diff < 1 || diff > 3) {
+                            throw new Error(`Card ${i + 1}: 'difficulty' deve ser 1, 2 ou 3`);
+                        }
+                    }
+                }
+
+                return { isValid: true, data: json };
+            } catch (e) {
+                return { isValid: false, error: e.message };
+            }
+        };
+
+        // Validação e feedback em tempo real para o JSON
+        if (aiJson) {
+            const jsonFeedback = document.createElement('div');
+            jsonFeedback.className = 'json-feedback';
+            jsonFeedback.style.cssText = `
+                margin-top: 8px;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 0.85rem;
+                line-height: 1.4;
+                display: none;
+            `;
+            aiJson.parentNode.appendChild(jsonFeedback);
+
+            aiJson.addEventListener('input', () => {
+                const { isValid, data, error } = validateJson(aiJson.value);
+
+                console.log('Validação JSON:', { isValid, data, error, buttonElement: importJsonBtn });
+
+                if (aiJson.value.trim() === '') {
+                    // Campo vazio
+                    importJsonBtn.disabled = true;
+                    aiJson.classList.remove('error');
+                    importJsonBtn.textContent = 'Importar Cards';
+                    jsonFeedback.style.display = 'none';
+                } else if (isValid) {
+                    // JSON válido
+                    importJsonBtn.disabled = false;
+                    aiJson.classList.remove('error');
+                    const cardCount = data.length;
+                    importJsonBtn.textContent = `Importar ${cardCount} Card${cardCount !== 1 ? 's' : ''}`;
+
+                    console.log('Botão habilitado:', importJsonBtn.disabled);
+
+                    // Mostrar feedback positivo
+                    jsonFeedback.style.display = 'block';
+                    jsonFeedback.style.backgroundColor = 'rgba(53, 189, 111, 0.1)';
+                    jsonFeedback.style.color = '#35bd6f';
+                    jsonFeedback.style.border = '1px solid rgba(53, 189, 111, 0.3)';
+                    jsonFeedback.innerHTML = `<i class="fas fa-check-circle"></i> ${cardCount} card${cardCount !== 1 ? 's' : ''} válido${cardCount !== 1 ? 's' : ''} encontrado${cardCount !== 1 ? 's' : ''}`;
+                } else {
+                    // JSON inválido
+                    importJsonBtn.disabled = true;
+                    aiJson.classList.add('error');
+                    importJsonBtn.textContent = 'Importar Cards';
+
+                    // Mostrar feedback de erro
+                    jsonFeedback.style.display = 'block';
+                    jsonFeedback.style.backgroundColor = 'rgba(255, 77, 79, 0.1)';
+                    jsonFeedback.style.color = '#ff4d4f';
+                    jsonFeedback.style.border = '1px solid rgba(255, 77, 79, 0.3)';
+                    jsonFeedback.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error}`;
+                }
+            });
+        }
+
+        // Evento de clique para o botão de importação
+        if (importJsonBtn) {
+            importJsonBtn.addEventListener('click', async (event) => {
+                event.preventDefault();
+
+                // Se o botão estiver desabilitado, não fazer nada
+                if (importJsonBtn.disabled) {
+                    return;
+                }
+                const deckId = aiDeckSelect.value;
+                const jsonContent = aiJson.value;
+                const originalButtonText = importJsonBtn.textContent;
+
+                if (!deckId) {
+                    showNotification('Por favor, selecione um deck primeiro.', 'error');
+                    aiDeckSelect.focus();
+                    return;
+                }
+
+                if (!jsonContent.trim()) {
+                    showNotification('Por favor, cole o JSON com os cards.', 'error');
+                    aiJson.focus();
+                    return;
+                }
+
+                const { isValid, data: cards, error } = validateJson(jsonContent);
+                if (!isValid) {
+                    showNotification(`Erro na validação: ${error}`, 'error');
+                    return;
+                }
+
+                // Confirmação antes de importar muitos cards
+                if (cards.length > 20) {
+                    const confirmed = confirm(`Você está prestes a importar ${cards.length} cards. Deseja continuar?`);
+                    if (!confirmed) {
+                        return;
+                    }
+                }
+
+                try {
+                    importJsonBtn.disabled = true;
+                    importJsonBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importando...';
+
+                    await importCardsFromJson(cards, deckId);
+
+                    // Limpar o formulário após sucesso
+                    if (aiForm) aiForm.reset();
+                    if (aiJson) aiJson.value = '';
+                    if (aiPrompt) aiPrompt.value = '';
+
+                    closeModal(aiModal);
+                } catch (err) {
+                    // A função importCardsFromJson já mostra a notificação de erro
+                    console.error('Falha no processo de importação:', err);
+                } finally {
+                    importJsonBtn.disabled = false;
+                    importJsonBtn.innerHTML = originalButtonText;
+                }
+            });
+        }
+
+        // Abrir modal ao clicar no botão
+        generateAIBtn.addEventListener('click', () => {
+            // Limpar campos ao abrir o modal
+            if (aiForm) aiForm.reset();
+            if (aiJson) aiJson.value = '';
+            if (aiPrompt) aiPrompt.value = '';
+            importJsonBtn.disabled = true;
+
+            // Abrir o modal
+            openModal(aiModal);
+
+            // Mudar para a aba de importação como padrão
+            switchTab('importar');
+
+            // Pré-selecionar o deck atual no modal de IA, se aplicável
+            const currentDeckId = new URLSearchParams(window.location.search).get('id');
+            if (currentDeckId && aiDeckSelect) {
+                aiDeckSelect.value = currentDeckId;
+            }
+
+            // Focar no campo de JSON após um pequeno delay para garantir a renderização
+            setTimeout(() => {
+                if (aiJson) {
+                    aiJson.focus();
+                }
+            }, 150);
+        });
+
+        // Fechar modal ao clicar no botão de cancelar
+        const aiModalCancel = aiModal.querySelector('.cancel-modal');
+        if (aiModalCancel) {
+            aiModalCancel.addEventListener('click', () => closeModal(aiModal));
+        }
+
+        // Botão de exemplo JSON
+        const exampleJsonBtn = document.getElementById('example-json-btn');
+        if (exampleJsonBtn) {
+            exampleJsonBtn.addEventListener('click', () => {
+                const exampleJson = [
+                    {
+                        "question": "O que é JavaScript?",
+                        "response": "JavaScript é uma linguagem de programação interpretada estruturada, de script em alto nível com tipagem dinâmica fraca e multiparadigma.",
+                        "difficulty": 1
+                    },
+                    {
+                        "question": "Quais são os tipos de dados primitivos em JavaScript?",
+                        "response": "Os tipos primitivos são: number, string, boolean, undefined, null, symbol e bigint.",
+                        "difficulty": 2
+                    },
+                    {
+                        "question": "Como funciona o hoisting em JavaScript?",
+                        "response": "Hoisting é um comportamento onde declarações de variáveis e funções são movidas para o topo do escopo antes da execução do código.",
+                        "difficulty": 3
+                    }
+                ];
+
+                aiJson.value = JSON.stringify(exampleJson, null, 2);
+                // Disparar evento de input para atualizar a validação
+                aiJson.dispatchEvent(new Event('input'));
+            });
+        }
+    } else {
+        console.error('Botão de geração com IA ou modal não encontrado no DOM!');
+    }
+
+
 }
+
 
 /**
  * Configura a navegação entre as páginas
@@ -338,7 +755,8 @@ async function loadInitialData() {
 function populateDeckSelects() {
     const deckSelects = [
         document.getElementById('deck-filter'),
-        document.getElementById('card-deck')
+        document.getElementById('card-deck'),
+        document.getElementById('ai-deck-select') // Adicionado seletor do modal de IA
     ];
 
     console.log('Iniciando populateDeckSelects...');
@@ -490,6 +908,67 @@ function createCardElement(card) {
 }
 
 /**
+ * Importa múltiplos cards para um deck via API
+ * @param {Array<Object>} cardsToImport - Lista de cards a serem importados
+ * @param {number} deckId - ID do deck de destino
+ */
+const importCardsFromJson = async (cardsToImport, deckId) => {
+    if (!Array.isArray(cardsToImport) || cardsToImport.length === 0) {
+        throw new Error('O array de cards está vazio ou é inválido');
+    }
+
+    if (!deckId) {
+        throw new Error('ID do deck é obrigatório');
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showNotification('Usuário não autenticado.', 'error');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const response = await api.post(`/decks/${deckId}/cards/import`, {
+            cards: cardsToImport
+        });
+
+        if (response.status === 201) {
+            const message = response.data.message || `${cardsToImport.length} cards importados com sucesso!`;
+            showNotification(message, 'success');
+
+            // Recarrega a lista de cards
+            await loadCards();
+        } else {
+            throw new Error(response.data.error || 'Erro inesperado ao importar cards');
+        }
+    } catch (error) {
+        console.error('Erro na importação de cards:', error);
+
+        let errorMessage = 'Erro desconhecido ao importar cards';
+
+        if (error.response?.status === 404) {
+            errorMessage = 'Deck não encontrado ou você não tem permissão para acessá-lo';
+        } else if (error.response?.status === 401) {
+            errorMessage = 'Sessão expirada. Faça login novamente';
+            // Redirecionar para login após um tempo
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        } else if (error.response?.status === 400) {
+            errorMessage = error.response.data.error || 'Dados inválidos fornecidos';
+        } else if (error.response?.data?.error) {
+            errorMessage = error.response.data.error;
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+
+        showNotification(`Erro ao importar: ${errorMessage}`, 'error');
+        throw error; // Re-throw para ser capturado pelo handler principal
+    }
+};
+
+/**
  * Retorna o rótulo de dificuldade formatado
  * @param {number|string} difficulty - Nível de dificuldade (1-3)
  * @returns {string} - Rótulo formatado
@@ -531,6 +1010,7 @@ function filterCards() {
  * @returns {boolean} true se houver decks, false caso contrário
  */
 function hasAvailableDecks() {
+    console.log('Verificando decks disponíveis:', { decks, isArray: Array.isArray(decks), length: decks?.length });
     return decks && Array.isArray(decks) && decks.length > 0;
 }
 
