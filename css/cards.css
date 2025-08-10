@@ -1,19 +1,19 @@
 /* Estilos para o modal de geração com IA */
 :root {
     --input-bg: #1a1a1a;
-    --primary-purple: #8a4fff;
-    --primary-purple-light: rgba(138, 79, 255, 0.1);
+    --primary-purple: #6a75ca;
+    --primary-purple-light: rgba(106, 117, 202, 0.1);
 }
 
 /* Estilo para inputs e textareas dentro do modal de geração com IA */
-#ai-generate-modal input[type="text"],
-#ai-generate-modal input[type="email"],
-#ai-generate-modal input[type="password"],
-#ai-generate-modal input[type="number"],
-#ai-generate-modal select,
-#ai-generate-modal select option,
-#ai-generate-modal textarea,
-#ai-generate-modal .form-control {
+#ai-modal input[type="text"],
+#ai-modal input[type="email"],
+#ai-modal input[type="password"],
+#ai-modal input[type="number"],
+#ai-modal select,
+#ai-modal select option,
+#ai-modal textarea,
+#ai-modal .form-control {
     border: 1px solid var(--primary-purple) !important;
     border-radius: 6px !important;
     padding: 0.5rem 0.75rem !important;
@@ -27,43 +27,43 @@
     appearance: none;
 }
 
-/* Estilo para o select e suas opções */
-select {
+/* Estilo para o select e suas opções - APENAS no modal de IA */
+#ai-modal select {
     background-color: #000000 !important;
     color: #ffffff !important;
     border: 1px solid #444 !important;
 }
 
-/* Estilo para as opções do select */
-select option {
+/* Estilo para as opções do select - APENAS no modal de IA */
+#ai-modal select option {
     background-color: #000000 !important;
     color: #ffffff !important;
     padding: 10px 15px !important;
 }
 
-/* Estilo para quando o select está aberto */
-select:focus {
+/* Estilo para quando o select está aberto - APENAS no modal de IA */
+#ai-modal select:focus {
     background-color: #000000 !important;
     color: #ffffff !important;
-    border-color: #8a4fff !important;
-    box-shadow: 0 0 0 2px rgba(138, 79, 255, 0.2) !important;
+    border-color: #6a75ca !important;
+    box-shadow: 0 0 0 2px rgba(106, 117, 202, 0.2) !important;
     outline: none !important;
 }
 
-/* Estilo para o dropdown do select */
-select option:checked,
-select option[selected] {
+/* Estilo para o dropdown do select - APENAS no modal de IA */
+#ai-modal select option:checked,
+#ai-modal select option[selected] {
     background-color: #333333 !important;
     font-weight: 500;
 }
 
-/* Estilo para o hover nas opções */
-select option:hover {
+/* Estilo para o hover nas opções - APENAS no modal de IA */
+#ai-modal select option:hover {
     background-color: #333333 !important;
 }
 
-/* Estilo para o dropdown aberto */
-select:focus option:checked {
+/* Estilo para o dropdown aberto - APENAS no modal de IA */
+#ai-modal select:focus option:checked {
     background: #333333 !important;
 }
 
@@ -109,7 +109,7 @@ select::-ms-expand {
 .select-arrow select:focus {
     outline: none;
     border-color: var(--primary-purple);
-    box-shadow: 0 0 0 2px rgba(138, 79, 255, 0.2);
+    box-shadow: 0 0 0 2px rgba(106, 117, 202, 0.2);
 }
 
 input[type="text"]:focus,
@@ -120,7 +120,7 @@ select:focus,
 textarea:focus,
 .form-control:focus {
     border-color: var(--primary-purple) !important;
-    box-shadow: 0 0 0 2px rgba(138, 79, 255, 0.3) !important;
+    box-shadow: 0 0 0 2px rgba(106, 117, 202, 0.3) !important;
     outline: none !important;
 }
 
@@ -368,7 +368,7 @@ textarea:focus,
 #ai-prompt:focus,
 #ai-json:focus {
     border-color: var(--primary-purple) !important;
-    box-shadow: 0 0 0 2px rgba(138, 79, 255, 0.3) !important;
+    box-shadow: 0 0 0 2px rgba(106, 117, 202, 0.3) !important;
     outline: none;
 }
 

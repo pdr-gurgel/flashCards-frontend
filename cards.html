@@ -221,8 +221,15 @@
                         <div class="form-group">
                             <label for="ai-json">Cole o JSON aqui:</label>
                             <textarea id="ai-json" class="form-control"
-                                placeholder='[{"question": "Pergunta 1", "response": "Resposta 2"}, {"question": "Pergunta 2", "response": "Resposta 2"}]'
+                                placeholder='[{"question": "O que é JavaScript?", "response": "JavaScript é uma linguagem de programação...", "difficulty": 1}]'
                                 rows="8"></textarea>
+                            <small class="form-text text-muted">
+                                <br><strong>Máximo:</strong> 30 cards por importação.
+                                <button type="button" id="example-json-btn" class="btn btn-text"
+                                    style="margin-top: 8px;">
+                                    <i class="fas fa-lightbulb"></i> Ver exemplo
+                                </button>
+                            </small>
                         </div>
 
 
@@ -286,7 +293,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-secondary cancel-modal">Cancelar</button>
-                <button type="button" id="import-json-btn" class="btn-primary" disabled>Importar Cards</button>
+                <button type="button" id="import-json-btn" class="btn-primary">Importar Cards</button>
             </div>
         </div>
     </div>
