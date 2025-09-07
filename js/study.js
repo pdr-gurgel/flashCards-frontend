@@ -9,7 +9,7 @@ import { protectRoute, getCurrentUser, logout, getToken } from './auth.js';
 import { showNotification } from './notifications.js';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'https://flashcards-backend-ejyn.onrender.com';
 
 // Estado da aplicação
 let currentSession = null;
