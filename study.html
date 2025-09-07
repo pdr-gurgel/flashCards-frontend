@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modo Estudo - Aplicativo de Flashcards</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h1 class="app-title">Flashcards</h1>
+
+            <div class="user-profile">
+                <div class="user-profile-placeholder">
+                    <span class="user-initial">U</span>
+                </div>
+                <h3 class="user-name user-name-display">Usuário</h3>
+                <p class="user-grade">Estudante</p>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item" data-page="dashboard">
+                    <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+                    <span class="nav-text">Dashboard</span>
+                </li>
+                <li class="nav-item" data-page="decks">
+                    <span class="nav-icon"><i class="fas fa-layer-group"></i></span>
+                    <span class="nav-text">Meus Decks</span>
+                </li>
+                <li class="nav-item" data-page="cards">
+                    <span class="nav-icon"><i class="fas fa-clone"></i></span>
+                    <span class="nav-text">Meus Cards</span>
+                </li>
+                <li class="nav-item active" data-page="study">
+                    <span class="nav-icon"><i class="fas fa-book-open"></i></span>
+                    <span class="nav-text">Modo Estudo</span>
+                </li>
+                <li class="nav-item" data-page="pomodoro">
+                    <span class="nav-icon"><i class="fas fa-clock"></i></span>
+                    <span class="nav-text">Pomodoro</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="dashboard-header">
+                <h1 class="page-title">Modo Estudo</h1>
+                <div class="header-right">
+                    <div class="date-display">Carregando data...</div>
+                    <div class="header-actions">
+                        <button id="theme-toggle" class="btn-icon" aria-label="Alternar tema">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        <button id="logout-btn" class="btn-primary">Sair</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Study Subheader -->
+            <div class="study-subheader">
+                <h2 class="subheader-title">Aprenda com repetição espaçada inteligente</h2>
+                <div class="subheader-actions">
+                    <button class="btn-primary" id="start-study-btn">
+                        <i class="fas fa-play"></i> Iniciar Estudo
+                    </button>
+                    <button class="btn-secondary" id="view-stats-btn">
+                        <i class="fas fa-chart-bar"></i> Estatísticas
+                    </button>
+                </div>
+            </div>
+
+            <!-- Study Overview -->
+            <div class="study-overview">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="cards-due">0</div>
+                            <div class="stat-label">Cards para revisar</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="cards-learned">0</div>
+                            <div class="stat-label">Cards aprendidos</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="cards-today">0</div>
+                            <div class="stat-label">Estudados hoje</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="success-rate">0%</div>
+                            <div class="stat-label">Taxa de sucesso</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decks Progress -->
+                <div class="decks-progress">
+                    <h3 class="section-title">Progresso por Deck</h3>
+                    <div class="progress-grid" id="progress-grid">
+                        <!-- Progresso dos decks será carregado aqui -->
+                        <div class="empty-state">
+                            <i class="fas fa-book-open empty-icon"></i>
+                            <h4>Nenhum deck encontrado</h4>
+                            <p>Crie um deck para começar a estudar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Study Session (Hidden by default) -->
+            <div class="study-session" id="study-session" style="display: none;">
+                <div class="session-header">
+                    <div class="session-info">
+                        <h3 class="session-title">Sessão de Estudo</h3>
+                        <div class="session-stats">
+                            <span class="session-progress">Card <span id="current-card">1</span> de <span
+                                    id="total-cards">10</span></span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="session-actions">
+                        <button class="session-close" id="end-session-btn">
+                            <i class="fas fa-times"></i> Finalizar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Flashcard Display -->
+                <div class="flashcard-container">
+                    <div class="flashcard" id="flashcard">
+                        <div class="flashcard-inner">
+                            <div class="flashcard-front">
+                                <div class="card-deck-info">
+                                    <span class="deck-name" id="card-deck-name">Deck Name</span>
+                                    <div class="deck-icon-display" id="card-deck-icon">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                </div>
+                                <div class="card-question" id="card-question">
+                                    <!-- Pergunta será carregada aqui -->
+                                </div>
+                                <button class="btn-primary show-answer-btn" id="show-answer-btn">
+                                    <i class="fas fa-eye"></i> Mostrar Resposta
+                                </button>
+                            </div>
+                            <div class="flashcard-back">
+                                <div class="card-deck-info">
+                                    <span class="deck-name" id="card-deck-name-back">Deck Name</span>
+                                    <div class="deck-icon-display" id="card-deck-icon-back">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="card-question-small" id="card-question-back">
+                                        <!-- Pergunta será mostrada aqui também -->
+                                    </div>
+                                    <div class="card-answer" id="card-answer">
+                                        <!-- Resposta será carregada aqui -->
+                                    </div>
+                                </div>
+                                <div class="difficulty-buttons">
+                                    <button class="difficulty-btn difficulty-hard" data-difficulty="1">
+                                        <i class="fas fa-times"></i>
+                                        <span>Difícil</span>
+                                        <small>Não lembrei</small>
+                                    </button>
+                                    <button class="difficulty-btn difficulty-medium" data-difficulty="2">
+                                        <i class="fas fa-minus"></i>
+                                        <span>Médio</span>
+                                        <small>Com esforço</small>
+                                    </button>
+                                    <button class="difficulty-btn difficulty-easy" data-difficulty="3">
+                                        <i class="fas fa-check"></i>
+                                        <span>Fácil</span>
+                                        <small>Lembrei facilmente</small>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Estatísticas -->
+    <div class="modal" id="stats-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Estatísticas de Estudo</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="stats-content" id="stats-content">
+                    <!-- Estatísticas detalhadas serão carregadas aqui -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary cancel-modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Configuração de Sessão -->
+    <div class="modal" id="session-config-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Configurar Sessão de Estudo</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="session-config-form">
+                    <div class="form-group">
+                        <label for="session-deck">Deck para estudar</label>
+                        <select id="session-deck" class="form-control">
+                            <option value="">Todos os decks</option>
+                            <!-- Decks serão preenchidos via JavaScript -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="session-limit">Número máximo de cards</label>
+                        <select id="session-limit" class="form-control">
+                            <option value="10">10 cards</option>
+                            <option value="20" selected>20 cards</option>
+                            <option value="30">30 cards</option>
+                            <option value="50">50 cards</option>
+                        </select>
+                    </div>
+                    <div class="session-preview" id="session-preview">
+                        <!-- Preview da sessão será mostrado aqui -->
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary cancel-modal">Cancelar</button>
+                <button class="btn-primary" id="confirm-start-study">Iniciar Estudo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Revisar mesmo assim -->
+    <div class="modal" id="review-anyway-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Todos os cards estão em aguardo</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>Você já estudou todos os cards deste deck e eles estão aguardando o período de revisão.
+                    Deseja revisar os cards novamente agora mesmo assim?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary cancel-modal">Não, voltar</button>
+                <button class="btn-primary" id="confirm-review-anyway">Revisar mesmo assim</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/study.js"></script>
+</body>
+
+</html>

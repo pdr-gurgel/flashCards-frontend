@@ -24,3 +24,7 @@
 .notification.error {
   background-color: var(--color-error);
 }
+
+.notification.warning {
+  background-color: #dc2626;
+}

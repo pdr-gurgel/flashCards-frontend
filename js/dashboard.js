@@ -139,8 +139,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     window.location.href = 'cards.html';
                     break;
                 case 'study':
-                    // Implementação futura
-                    console.log('Navegando para modo estudo');
+                    window.location.href = 'study.html';
                     break;
                 case 'pomodoro':
                     // Implementação futura
@@ -171,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     break;
                 case 'study':
                     // Navigate to study mode
-                    console.log('Starting study mode');
+                    window.location.href = 'study.html';
                     break;
                 case 'pomodoro':
                     // Navigate to pomodoro timer

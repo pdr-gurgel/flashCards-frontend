@@ -660,8 +660,7 @@ function setupNavigation() {
             } else if (page === 'decks') {
                 window.location.href = 'decks.html';
             } else if (page === 'study') {
-                // Implementar navegação para modo de estudo
-                console.log('Navegando para modo de estudo');
+                window.location.href = 'study.html';
             } else if (page === 'pomodoro') {
                 // Implementar navegação para pomodoro
                 console.log('Navegando para pomodoro');
@@ -715,6 +714,11 @@ function updateCurrentDate() {
 async function loadInitialData() {
     try {
         console.log('Iniciando carregamento de dados iniciais...');
+
+        // Verificar se há parâmetro de deck na URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const deckParam = urlParams.get('deck');
+
         // Carregar decks e cards em paralelo para melhor desempenho
         console.log('Fazendo requisição para /decks...');
         const [decksResponse] = await Promise.all([
@@ -732,6 +736,32 @@ async function loadInitialData() {
 
         // Preencher select de decks
         populateDeckSelects();
+
+        // Se há parâmetro de deck na URL, pré-selecionar o filtro
+        if (deckParam) {
+            console.log(`Pré-selecionando deck ID: ${deckParam}`);
+            const deckFilter = document.getElementById('deck-filter');
+            if (deckFilter) {
+                // Encontrar o deck correspondente
+                const selectedDeck = decks.find(deck => deck.id == deckParam);
+                if (selectedDeck) {
+                    deckFilter.value = deckParam;
+                    // Alterar o texto do filtro para mostrar o deck selecionado
+                    const selectedOption = deckFilter.querySelector(`option[value="${deckParam}"]`);
+                    if (selectedOption) {
+                        selectedOption.textContent = selectedDeck.title || selectedDeck.name;
+                    }
+                    console.log(`✅ Deck selecionado: ${selectedDeck.title || selectedDeck.name}`);
+                }
+
+                // Aguardar um pouco para garantir que os cards foram carregados
+                setTimeout(() => {
+                    // Disparar evento de change para aplicar o filtro
+                    deckFilter.dispatchEvent(new Event('change'));
+                    console.log(`✅ Filtro aplicado para deck ID: ${deckParam}`);
+                }, 500);
+            }
+        }
 
         // Carregar cards
         await loadCards();
