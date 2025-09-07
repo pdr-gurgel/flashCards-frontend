@@ -236,6 +236,47 @@ function setupModalListeners(api) {
             closeModals();
         }
     });
+
+    // Modal "revisar mesmo assim"
+    const reviewAnywayBtn = document.getElementById('confirm-review-anyway');
+    if (reviewAnywayBtn) {
+        reviewAnywayBtn.addEventListener('click', async () => {
+            console.log('⚪ Confirmado: Revisar mesmo assim');
+            // Usa os valores atuais do modal de sessão
+            const deckId = document.getElementById('session-deck')?.value || '';
+            const limit = document.getElementById('session-limit')?.value || 20;
+
+            try {
+                closeModals();
+                const endpoint = deckId
+                    ? `/study/session/${deckId}?limit=${limit}&forceAll=true`
+                    : `/study/session?limit=${limit}&forceAll=true`;
+                console.log('📡 Forçando revisão via endpoint:', endpoint);
+                const apiInstance = axios.create({
+                    baseURL: API_BASE_URL,
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }
+                });
+                const resp = await apiInstance.get(endpoint);
+                const sessionData = resp.data.data;
+                console.log('✅ Sessão forçada recebida:', sessionData);
+
+                if (!sessionData || !Array.isArray(sessionData.cards) || sessionData.cards.length === 0) {
+                    showNotification('Mesmo forçando, não há cards para revisar neste contexto.', 'warning');
+                    return;
+                }
+                currentSession = sessionData.session;
+                sessionCards = sessionData.cards;
+                currentCardIndex = 0;
+                isCardFlipped = false;
+                showStudyInterface();
+                showCurrentCard();
+                showNotification(`Revisão iniciada com ${sessionData.totalCards} cards`, 'success');
+            } catch (err) {
+                console.error('Erro ao iniciar revisão forçada:', err);
+                showNotification('Erro ao iniciar revisão', 'error');
+            }
+        });
+    }
 }
 
 /**
@@ -493,7 +534,9 @@ async function openStatsModal(api) {
             // Calcular métricas
             const totalCards = stats.total_cards || 0;
             const cardsLearned = stats.cards_learned || 0;
-            const overallProgress = totalCards > 0 ? Math.round((cardsLearned / totalCards) * 100) : 0;
+            // Progresso total baseado em cards estudados (não apenas "aprendidos")
+            const studied = stats.total_cards_studied || 0;
+            const overallProgress = totalCards > 0 ? Math.round((studied / totalCards) * 100) : 0;
 
             let successRate = 0;
             if (stats.avg_ease_factor && stats.total_cards_studied > 0) {
@@ -708,13 +751,13 @@ async function startStudySession(api) {
         console.log(`✅ Resposta da sessão:`, sessionData);
 
         if (sessionData.totalCards === 0) {
-            // Verificar se é um deck específico sem cards
-            if (deckId) {
-                // Buscar o nome do deck para a mensagem
-                const deckName = document.getElementById('session-deck')?.options[document.getElementById('session-deck')?.selectedIndex]?.text || 'este deck';
-                showNotification(`O deck "${deckName}" não possui cards para estudar. Adicione alguns cards primeiro!`, 'warning');
+            // Exibir modal oferecendo revisar mesmo assim
+            const reviewModal = document.getElementById('review-anyway-modal');
+            if (reviewModal) {
+                reviewModal.classList.add('show');
             } else {
-                showNotification('Nenhum card disponível para revisão no momento', 'warning');
+                // Fallback de notificação caso o modal não exista
+                showNotification('Todos os cards estão em aguardo. Deseja revisar mesmo assim?', 'warning');
             }
             return;
         }
@@ -794,10 +837,11 @@ function showCurrentCard() {
     updateElement('card-question-back', card.question);
     updateElement('card-answer', card.response);
 
-    // Atualizar ícones do deck
+    // Atualizar ícones do deck (garantindo prefixo 'fas')
     const deckIcons = document.querySelectorAll('#card-deck-icon, #card-deck-icon-back');
+    const iconClass = card.deck_icon ? (card.deck_icon.startsWith('fas ') || card.deck_icon.startsWith('fa ') ? card.deck_icon : `fas ${card.deck_icon}`) : 'fas fa-book';
     deckIcons.forEach(icon => {
-        icon.innerHTML = `<i class="${card.deck_icon}"></i>`;
+        icon.innerHTML = `<i class="${iconClass}"></i>`;
         icon.style.backgroundColor = card.deck_color;
     });
 
