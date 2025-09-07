@@ -13,6 +13,7 @@ export default defineConfig({
         dashboard: resolve(__dirname, 'dashboard.html'),
         decks: resolve(__dirname, 'decks.html'),
         cards: resolve(__dirname, 'cards.html'),
+        study: resolve(__dirname, 'study.html'),
       },
     },
   },
